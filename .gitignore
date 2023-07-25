@@ -1,0 +1,5 @@
+.vs/
+CMakeLists.txt
+CMakePresets.json
+out/
+images/
