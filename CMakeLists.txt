@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.18)
 project(ray_tracer LANGUAGES CXX CUDA)
 
+# Set the C++ standard
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Set the CUDA version
 find_package(CUDA 12.5 REQUIRED)
 
