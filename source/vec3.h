@@ -56,55 +56,55 @@ using vec3 = vec3_base<void>;
 // Vector Utility Functions
 
 template <typename T>
-inline std::ostream& operator<<(std::ostream& out, const vec3_base<T>& v) {
+__host__ __device__ std::ostream& operator<<(std::ostream& out, const vec3_base<T>& v) {
     return out << v.e[0] << ' ' << v.e[1] << ' ' << v.e[2];
 }
 
 template <typename T>
-inline vec3_base<T> operator+(const vec3_base<T>& u, const vec3_base<T>& v) {
+__host__ __device__ vec3_base<T> operator+(const vec3_base<T>& u, const vec3_base<T>& v) {
     return vec3_base<T>(u.e[0] + v.e[0], u.e[1] + v.e[1], u.e[2] + v.e[2]);
 }
 
 template <typename T>
-inline vec3_base<T> operator-(const vec3_base<T>& u, const vec3_base<T>& v) {
+__host__ __device__ vec3_base<T> operator-(const vec3_base<T>& u, const vec3_base<T>& v) {
     return vec3_base<T>(u.e[0] - v.e[0], u.e[1] - v.e[1], u.e[2] - v.e[2]);
 }
 
 template <typename T>
-inline vec3_base<T> operator*(const vec3_base<T>& u, const vec3_base<T>& v) {
+__host__ __device__ vec3_base<T> operator*(const vec3_base<T>& u, const vec3_base<T>& v) {
     return vec3_base<T>(u.e[0] * v.e[0], u.e[1] * v.e[1], u.e[2] * v.e[2]);
 }
 
 template <typename T>
-inline vec3_base<T> operator*(double t, const vec3_base<T>& v) {
+__host__ __device__ vec3_base<T> operator*(double t, const vec3_base<T>& v) {
     return vec3_base<T>(t*v.e[0], t*v.e[1], t*v.e[2]);
 }
 
 template <typename T>
-inline vec3_base<T> operator*(const vec3_base<T>& v, double t) {
+__host__ __device__ vec3_base<T> operator*(const vec3_base<T>& v, double t) {
     return t * v;
 }
 
 template <typename T>
-inline vec3_base<T> operator/(const vec3_base<T>& v, double t) {
+__host__ __device__ vec3_base<T> operator/(const vec3_base<T>& v, double t) {
     return (1/t) * v;
 }
 
 template <typename T>
-inline double dot(const vec3_base<T>& u, const vec3_base<T>& v) {
+__host__ __device__ double dot(const vec3_base<T>& u, const vec3_base<T>& v) {
     return u.e[0] * v.e[0]
          + u.e[1] * v.e[1]
          + u.e[2] * v.e[2];
 }
 
 template <typename T>
-inline vec3_base<T> cross(const vec3_base<T>& u, const vec3_base<T>& v) {
+__host__ __device__ vec3_base<T> cross(const vec3_base<T>& u, const vec3_base<T>& v) {
     return vec3_base<T>(u.e[1] * v.e[2] - u.e[2] * v.e[1],
                         u.e[2] * v.e[0] - u.e[0] * v.e[2],
                         u.e[0] * v.e[1] - u.e[1] * v.e[0]);
 }
 
 template <typename T>
-inline vec3_base<T> unit_vector(const vec3_base<T>& v) {
+__host__ __device__ vec3_base<T> unit_vector(const vec3_base<T>& v) {
     return v / v.length();
 }
