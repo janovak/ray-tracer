@@ -10,7 +10,7 @@ struct Ray {
     __host__ __device__ const Point3& Origin() const  { return m_origin; }
     __host__ __device__ const Vec3& Direction() const { return m_direction; }
 
-    __host__ __device__ Point3 At(double t) const {
+    __host__ __device__ Point3 At(float t) const {
         return m_origin + t * m_direction;
     }
 

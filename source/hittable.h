@@ -10,12 +10,12 @@ struct HitRecord {
     }
 
     bool m_front_face;
-    double m_t;
+    float m_t;
     Point3 m_point;
     Vec3 m_normal;
 };
 
 class Hittable {
 public:
-    __host__ __device__ virtual bool Hit(const Ray& ray, double ray_tmin, double ray_tmax, HitRecord& rec) const = 0;
+    __host__ __device__ virtual bool Hit(const Ray& ray, float ray_tmin, float ray_tmax, HitRecord& rec) const = 0;
 };

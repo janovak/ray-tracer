@@ -32,8 +32,8 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 
 __global__ void create_world(Hittable **d_list, Hittable **d_world) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
-        *(d_list)   = new Sphere(Point3(0,0,-1), 0.5);
-        *(d_list+1) = new Sphere(Point3(0,-100.5,-1), 100);
+        *(d_list)   = new Sphere(Point3(0,0,-1), 0.5f);
+        *(d_list+1) = new Sphere(Point3(0,-100.5f,-1), 100);
         *d_world    = new HittableList(d_list,2);
     }
 }
@@ -51,7 +51,7 @@ __device__ Color trace_ray(const Ray& ray, Hittable** world) {
     } else {
         Vec3 unit_direction = UnitVector(ray.Direction());
         float a = 0.5f*(unit_direction.Y() + 1.0f);
-        return (1.0f-a)*Color(1.0, 1.0, 1.0) + a*Color(0.5, 0.7, 1.0);
+        return (1.0f-a)*Color(1.0f, 1.0f, 1.0f) + a*Color(0.5f, 0.7f, 1.0f);
     }
 }
 
@@ -89,14 +89,14 @@ struct calculate_Color {
         world->Hit(R, 0, kInfinity, rec);
 
         Vec3 unit_direction = UnitVector(ray_direction);
-        double a = 0.5*(unit_direction.Y() + 1.0);
-        return (1.0-a)*Color(1.0, 1.0, 1.0) + a*Color(0.5, 0.7, 1.0);
+        float a = 0.5f*(unit_direction.Y() + 1.0f);
+        return (1.0f-a)*Color(1.0f, 1.0f, 1.0f) + a*Color(0.5f, 0.7f, 1.0f);
     }
 };
 
 int main() {
     // Image dimensions
-    double aspect_ratio = 16.0 / 9.0;
+    float aspect_ratio = 16.0f / 9.0f;
     int image_width = 400;
 
     // Calculate the image height, and ensure that it's At least 1.
@@ -117,9 +117,9 @@ int main() {
 
     // Camera
 
-    double focal_length = 1.0;
-    double viewport_height = 2.0;
-    double viewport_width = viewport_height * (double(image_width)/image_height);
+    float focal_length = 1.0f;
+    float viewport_height = 2.0f;
+    float viewport_width = viewport_height * (float(image_width)/image_height);
     Point3 h_camera_center = Point3(0, 0, 0);
     cudaMemcpyToSymbol(d_camera_center, &h_camera_center, sizeof(Point3));
 
@@ -135,7 +135,7 @@ int main() {
 
     // Calculate the location of the upper left pixel.
     Point3 viewport_upper_left = h_camera_center - Vec3(0, 0, focal_length) - viewport_u/2 - viewport_v/2;
-    Point3 h_pixel00_loc = viewport_upper_left + 0.5 * (h_pixel_delta_u + h_pixel_delta_v);
+    Point3 h_pixel00_loc = viewport_upper_left + 0.5f * (h_pixel_delta_u + h_pixel_delta_v);
     cudaMemcpyToSymbol(d_pixel00_loc, &h_pixel00_loc, sizeof(Point3));
 
 

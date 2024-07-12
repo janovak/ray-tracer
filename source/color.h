@@ -7,11 +7,11 @@
 class Color : public Vec3Base<Color> {
   public:
     __host__ __device__ Color() : Vec3Base() {}
-    __host__ __device__ Color(double e0, double e1, double e2) : Vec3Base(e0, e1, e2) {}
+    __host__ __device__ Color(float e0, float e1, float e2) : Vec3Base(e0, e1, e2) {}
 
-    __host__ __device__ double R() const { return e[0]; }
-    __host__ __device__ double B() const { return e[1]; }
-    __host__ __device__ double G() const { return e[2]; }
+    __host__ __device__ float R() const { return e[0]; }
+    __host__ __device__ float B() const { return e[1]; }
+    __host__ __device__ float G() const { return e[2]; }
 };
 
 __host__ std::ostream& operator<<(std::ostream& out, const Color& color) {

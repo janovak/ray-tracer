@@ -4,7 +4,7 @@
 
 struct Point3 : public Vec3Base<Point3> {
     __host__ __device__ Point3() : Vec3Base() {}
-    __host__ __device__ Point3(double e0, double e1, double e2) : Vec3Base(e0, e1, e2) {}
+    __host__ __device__ Point3(float e0, float e1, float e2) : Vec3Base(e0, e1, e2) {}
 };
 
 __host__ __device__ Point3 operator-(const Point3& u, const Vec3& v) {
