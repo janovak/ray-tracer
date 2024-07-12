@@ -15,10 +15,10 @@
 #include "ray.h"
 
 // Camera and viewport constants
-__constant__ point3 d_camera_center;
-__constant__ point3 d_pixel00_loc;
-__constant__ point3 d_pixel_delta_u;
-__constant__ point3 d_pixel_delta_v;
+__constant__ Point3 d_camera_center;
+__constant__ Point3 d_pixel00_loc;
+__constant__ Point3 d_pixel_delta_u;
+__constant__ Point3 d_pixel_delta_v;
 
 #define gpuErrorCheck(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
@@ -30,67 +30,67 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
-__global__ void create_world(hittable **d_list, hittable **d_world) {
+__global__ void create_world(Hittable **d_list, Hittable **d_world) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
-        *(d_list)   = new sphere(point3(0,0,-1), 0.5);
-        *(d_list+1) = new sphere(point3(0,-100.5,-1), 100);
-        *d_world    = new hittable_list(d_list,2);
+        *(d_list)   = new Sphere(Point3(0,0,-1), 0.5);
+        *(d_list+1) = new Sphere(Point3(0,-100.5,-1), 100);
+        *d_world    = new HittableList(d_list,2);
     }
 }
 
-__global__ void free_world(hittable **d_list, hittable **d_world) {
+__global__ void free_world(Hittable **d_list, Hittable **d_world) {
     delete *(d_list);
     delete *(d_list+1);
     delete *d_world;
 }
 
-__device__ color trace_ray(const ray& r, hittable** world) {
-    hit_record rec;
-    if ((*world)->hit(r, 0, infinity, rec)) {
-        return 0.5f*color(rec.normal.x()+1.0f, rec.normal.y()+1.0f, rec.normal.z()+1.0f);
+__device__ Color trace_ray(const Ray& ray, Hittable** world) {
+    HitRecord rec;
+    if ((*world)->Hit(ray, 0, kInfinity, rec)) {
+        return 0.5f*Color(rec.m_normal.X()+1.0f, rec.m_normal.Y()+1.0f, rec.m_normal.Z()+1.0f);
     } else {
-        vec3 unit_direction = unit_vector(r.direction());
-        float a = 0.5f*(unit_direction.y() + 1.0f);
-        return (1.0f-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);
+        Vec3 unit_direction = UnitVector(ray.Direction());
+        float a = 0.5f*(unit_direction.Y() + 1.0f);
+        return (1.0f-a)*Color(1.0, 1.0, 1.0) + a*Color(0.5, 0.7, 1.0);
     }
 }
 
 // Kernel to process image data
-__global__ void process_image_kernel(color* d_image, int width, int height, hittable** d_world) {
+__global__ void process_image_kernel(Color* d_image, int width, int height, Hittable** d_world) {
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
     int idy = threadIdx.y + blockIdx.y * blockDim.y;
 
     if (idx < width && idy < height) {
         int pixel_idx = idy * width + idx;
 
-        point3 pixel_center = d_pixel00_loc + (idx * d_pixel_delta_u) + (idy * d_pixel_delta_v);
-        vec3 ray_direction = pixel_center - d_camera_center;
-        ray r (d_camera_center, ray_direction);
+        Point3 pixel_center = d_pixel00_loc + (idx * d_pixel_delta_u) + (idy * d_pixel_delta_v);
+        Vec3 ray_direction = pixel_center - d_camera_center;
+        Ray R (d_camera_center, ray_direction);
 
-        d_image[pixel_idx] = trace_ray(r, d_world);
+        d_image[pixel_idx] = trace_ray(R, d_world);
     }
 }
 
-// Functor to calculate the color of a pixel
-struct calculate_color {
-    hittable_list* world;
+// Functor to calculate the Color of a pixel
+struct calculate_Color {
+    HittableList* world;
 
-    __host__ __device__ calculate_color(hittable_list* world_ptr) : world(world_ptr) {}
+    __host__ __device__ calculate_Color(HittableList* world_ptr) : world(world_ptr) {}
 
-    __device__ color operator()(thrust::tuple<int, int> index) const {
+    __device__ Color operator()(thrust::tuple<int, int> index) const {
         int i = thrust::get<0>(index);
         int j = thrust::get<1>(index);
 
-        point3 pixel_center = d_pixel00_loc + (i * d_pixel_delta_u) + (j * d_pixel_delta_v);
-        vec3 ray_direction = pixel_center - d_camera_center;
-        ray r (d_camera_center, ray_direction);
+        Point3 pixel_center = d_pixel00_loc + (i * d_pixel_delta_u) + (j * d_pixel_delta_v);
+        Vec3 ray_direction = pixel_center - d_camera_center;
+        Ray R (d_camera_center, ray_direction);
 
-        hit_record rec;
-        world->hit(r, 0, infinity, rec);
+        HitRecord rec;
+        world->Hit(R, 0, kInfinity, rec);
 
-        vec3 unit_direction = unit_vector(ray_direction);
-        double a = 0.5*(unit_direction.y() + 1.0);
-        return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);
+        Vec3 unit_direction = UnitVector(ray_direction);
+        double a = 0.5*(unit_direction.Y() + 1.0);
+        return (1.0-a)*Color(1.0, 1.0, 1.0) + a*Color(0.5, 0.7, 1.0);
     }
 };
 
@@ -99,17 +99,17 @@ int main() {
     double aspect_ratio = 16.0 / 9.0;
     int image_width = 400;
 
-    // Calculate the image height, and ensure that it's at least 1.
+    // Calculate the image height, and ensure that it's At least 1.
     int image_height = int(image_width / aspect_ratio);
     image_height = (image_height < 1) ? 1 : image_height;
 
-    hittable** d_list;
-    hittable** d_world;
+    Hittable** d_list;
+    Hittable** d_world;
 
     constexpr unsigned int SPHERES = 2;
 
-    cudaMalloc((void**)&d_list, SPHERES * sizeof(hittable*));
-    cudaMalloc((void**)&d_world, sizeof(hittable*));
+    cudaMalloc((void**)&d_list, SPHERES * sizeof(Hittable*));
+    cudaMalloc((void**)&d_world, sizeof(Hittable*));
 
     create_world<<<1,1>>>(d_list, d_world);
     cudaDeviceSynchronize();
@@ -120,23 +120,23 @@ int main() {
     double focal_length = 1.0;
     double viewport_height = 2.0;
     double viewport_width = viewport_height * (double(image_width)/image_height);
-    point3 h_camera_center = point3(0, 0, 0);
-    cudaMemcpyToSymbol(d_camera_center, &h_camera_center, sizeof(point3));
+    Point3 h_camera_center = Point3(0, 0, 0);
+    cudaMemcpyToSymbol(d_camera_center, &h_camera_center, sizeof(Point3));
 
     // Calculate the vectors across the horizontal and down the vertical viewport edges.
-    vec3 viewport_u = vec3(viewport_width, 0, 0);
-    vec3 viewport_v = vec3(0, -viewport_height, 0);
+    Vec3 viewport_u = Vec3(viewport_width, 0, 0);
+    Vec3 viewport_v = Vec3(0, -viewport_height, 0);
 
     // Calculate the horizontal and vertical delta vectors from pixel to pixel.
-    vec3 h_pixel_delta_u = viewport_u / image_width;
-    cudaMemcpyToSymbol(d_pixel_delta_u, &h_pixel_delta_u, sizeof(point3));
-    vec3 h_pixel_delta_v = viewport_v / image_height;
-    cudaMemcpyToSymbol(d_pixel_delta_v, &h_pixel_delta_v, sizeof(point3));
+    Vec3 h_pixel_delta_u = viewport_u / image_width;
+    cudaMemcpyToSymbol(d_pixel_delta_u, &h_pixel_delta_u, sizeof(Point3));
+    Vec3 h_pixel_delta_v = viewport_v / image_height;
+    cudaMemcpyToSymbol(d_pixel_delta_v, &h_pixel_delta_v, sizeof(Point3));
 
     // Calculate the location of the upper left pixel.
-    point3 viewport_upper_left = h_camera_center - vec3(0, 0, focal_length) - viewport_u/2 - viewport_v/2;
-    point3 h_pixel00_loc = viewport_upper_left + 0.5 * (h_pixel_delta_u + h_pixel_delta_v);
-    cudaMemcpyToSymbol(d_pixel00_loc, &h_pixel00_loc, sizeof(point3));
+    Point3 viewport_upper_left = h_camera_center - Vec3(0, 0, focal_length) - viewport_u/2 - viewport_v/2;
+    Point3 h_pixel00_loc = viewport_upper_left + 0.5 * (h_pixel_delta_u + h_pixel_delta_v);
+    cudaMemcpyToSymbol(d_pixel00_loc, &h_pixel00_loc, sizeof(Point3));
 
 
     int num_pixels = image_height * image_width;
@@ -162,18 +162,18 @@ int main() {
         thrust::make_transform_iterator(thrust::counting_iterator<int>(num_pixels), thrust::placeholders::_1 / image_width)));
 
     // Allocate memory for image on device
-    thrust::device_vector<color> d_image(num_pixels);
+    thrust::device_vector<Color> d_image(num_pixels);
 
-    // Compute the colors using thrust::transform
-    thrust::transform(thrust::device, begin, end, d_image.begin(), calculate_color(d_world));
+    // Compute the Colors using thrust::transform
+    thrust::transform(thrust::device, begin, end, d_image.begin(), calculate_Color(d_world));
 
     // Copy the result back to the host
-    thrust::host_vector<color> h_image(num_pixels);
+    thrust::host_vector<Color> h_image(num_pixels);
     thrust::copy(d_image.begin(), d_image.end(), h_image.begin()); */
 
     // Allocate memory for image on the device
-    color* d_image;
-    cudaMalloc((void**)&d_image, num_pixels * sizeof(color));
+    Color* d_image;
+    cudaMalloc((void**)&d_image, num_pixels * sizeof(Color));
 
 
     // Set up grid and block dimensions
@@ -188,10 +188,10 @@ int main() {
     process_image_kernel<<<numBlocks, blockSize>>>(d_image, image_width, image_height, d_world);
 
     // Allocate memory for image on the host
-    color* h_image = (color*)malloc(num_pixels * sizeof(color));
+    Color* h_image = (Color*)malloc(num_pixels * sizeof(Color));
 
     // Copy the result back to the host
-    cudaMemcpy(h_image, d_image, num_pixels * sizeof(color), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_image, d_image, num_pixels * sizeof(Color), cudaMemcpyDeviceToHost);
 
     // Output the image
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";

@@ -1,22 +1,22 @@
 #pragma once
 
-#include "hittable.h"
-
 #include <vector>
 
-struct hittable_list : public hittable {
-    __host__ __device__  hittable_list() {}
-	__host__ __device__  hittable_list(hittable **list, int size): m_list(list), m_size(size) {}
+#include "hittable.h"
 
-    __host__ __device__ bool hit(const ray& r, double ray_tmin, double ray_tmax, hit_record& rec) const override {
-        hit_record temp_rec;
+struct HittableList : public Hittable {
+    __host__ __device__  HittableList() {}
+    __host__ __device__  HittableList(Hittable **list, int size): m_list(list), m_size(size) {}
+
+    __host__ __device__ bool Hit(const Ray& ray, double ray_tmin, double ray_tmax, HitRecord& rec) const override {
+        HitRecord temp_rec;
         bool hit_anything = false;
         auto closest_so_far = ray_tmax;
 
         for (unsigned int i = 0; i < m_size; ++i) {
-            if (m_list[i]->hit(r, ray_tmin, closest_so_far, temp_rec)) {
+            if (m_list[i]->Hit(ray, ray_tmin, closest_so_far, temp_rec)) {
                 hit_anything = true;
-                closest_so_far = temp_rec.t;
+                closest_so_far = temp_rec.m_t;
                 rec = temp_rec;
             }
         }
@@ -24,6 +24,6 @@ struct hittable_list : public hittable {
         return hit_anything;
     }
 
-    hittable** m_list;
+    Hittable** m_list;
     unsigned int m_size = 0;
 };
