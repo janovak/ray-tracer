@@ -93,16 +93,16 @@ __host__ __device__ vec3_base<T> operator/(const vec3_base<T>& v, double t) {
 
 template <typename T>
 __host__ __device__ double dot(const vec3_base<T>& u, const vec3_base<T>& v) {
-    return u.e[0] * v.e[0]
-         + u.e[1] * v.e[1]
-         + u.e[2] * v.e[2];
+    return u[0] * v[0]
+         + u[1] * v[1]
+         + u[2] * v[2];
 }
 
 template <typename T>
 __host__ __device__ vec3_base<T> cross(const vec3_base<T>& u, const vec3_base<T>& v) {
-    return vec3_base<T>(u.e[1] * v.e[2] - u.e[2] * v.e[1],
-                        u.e[2] * v.e[0] - u.e[0] * v.e[2],
-                        u.e[0] * v.e[1] - u.e[1] * v.e[0]);
+    return vec3_base<T>(u[1] * v[2] - u[2] * v[1],
+                        u[2] * v[0] - u[0] * v[2],
+                        u[0] * v[1] - u[1] * v[0]);
 }
 
 template <typename T>
