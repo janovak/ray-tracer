@@ -4,8 +4,7 @@
 
 #include "vec3.h"
 
-class Color : public Vec3Base<Color> {
-  public:
+struct Color : public Vec3Base<Color> {
     __host__ __device__ Color() : Vec3Base() {}
     __host__ __device__ Color(float e0, float e1, float e2) : Vec3Base(e0, e1, e2) {}
 

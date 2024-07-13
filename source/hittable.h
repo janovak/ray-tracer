@@ -16,7 +16,6 @@ struct HitRecord {
     Vec3 m_normal;
 };
 
-class Hittable {
-public:
+struct Hittable {
     __host__ __device__ virtual bool Hit(const Ray& ray, Interval ray_t, HitRecord& rec) const = 0;
 };

@@ -8,8 +8,7 @@
 #include "ray.h"
 
 struct Sphere : public Hittable {
-    __host__ __device__ Sphere(const Point3& center, float radius) : m_center(center), m_radius(fmaxf(0,radius)) {
-    }
+    __host__ __device__ Sphere(const Point3& center, float radius) : m_center(center), m_radius(fmaxf(0,radius)) {}
 
     __host__ __device__ bool Hit(const Ray& ray, Interval ray_t, HitRecord& rec) const override {
         Vec3 oc = m_center - ray.Origin();

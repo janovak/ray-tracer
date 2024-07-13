@@ -18,7 +18,6 @@ struct Interval {
     __host__ __device__ bool Surrounds(float x) const {
         return m_min < x && x < m_max;
     }
-
     
     float m_min;
     float m_max;
