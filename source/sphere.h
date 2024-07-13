@@ -11,7 +11,7 @@ struct Sphere : public Hittable {
     __host__ __device__ Sphere(const Point3& center, float radius) : m_center(center), m_radius(fmaxf(0,radius)) {
     }
 
-    __host__ __device__ bool Hit(const Ray& ray, float ray_tmin, float ray_tmax, HitRecord& rec) const override {
+    __host__ __device__ bool Hit(const Ray& ray, Interval ray_t, HitRecord& rec) const override {
         Vec3 oc = m_center - ray.Origin();
         // a, B, and c in the quadratic formula are equal to a, -2h, and c below
         float a = ray.Direction().LengthSquared();
@@ -27,9 +27,9 @@ struct Sphere : public Hittable {
 
         // Find the nearest root that lies in the acceptable range.
         float root = (h - sqrtd) / a;
-        if (root <= ray_tmin || ray_tmax <= root) {
+        if (!ray_t.Surrounds(root)) {
             root = (h + sqrtd) / a;
-            if (root <= ray_tmin || ray_tmax <= root) {
+            if (!ray_t.Surrounds(root)) {
                 return false;
             }
         }

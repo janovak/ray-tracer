@@ -42,7 +42,7 @@ __global__ void FreeScene(Hittable **d_list, Hittable **d_world) {
 
 __device__ Color TraceRay(const Ray& ray, Hittable** world) {
     HitRecord rec;
-    if ((*world)->Hit(ray, 0, kInfinity, rec)) {
+    if ((*world)->Hit(ray, Interval(0, kInfinity), rec)) {
         return 0.5f*Color(rec.m_normal.X()+1.0f, rec.m_normal.Y()+1.0f, rec.m_normal.Z()+1.0f);
     } else {
         Vec3 unit_direction = UnitVector(ray.Direction());
