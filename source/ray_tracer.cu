@@ -65,34 +65,11 @@ __global__ void process_image_kernel(Color* d_image, int width, int height, Hitt
 
         Point3 pixel_center = d_pixel00_loc + (idx * d_pixel_delta_u) + (idy * d_pixel_delta_v);
         Vec3 ray_direction = pixel_center - d_camera_center;
-        Ray R (d_camera_center, ray_direction);
+        Ray ray(d_camera_center, ray_direction);
 
-        d_image[pixel_idx] = trace_ray(R, d_world);
+        d_image[pixel_idx] = trace_ray(ray, d_world);
     }
 }
-
-// Functor to calculate the Color of a pixel
-struct calculate_Color {
-    HittableList* world;
-
-    __host__ __device__ calculate_Color(HittableList* world_ptr) : world(world_ptr) {}
-
-    __device__ Color operator()(thrust::tuple<int, int> index) const {
-        int i = thrust::get<0>(index);
-        int j = thrust::get<1>(index);
-
-        Point3 pixel_center = d_pixel00_loc + (i * d_pixel_delta_u) + (j * d_pixel_delta_v);
-        Vec3 ray_direction = pixel_center - d_camera_center;
-        Ray R (d_camera_center, ray_direction);
-
-        HitRecord rec;
-        world->Hit(R, 0, kInfinity, rec);
-
-        Vec3 unit_direction = UnitVector(ray_direction);
-        float a = 0.5f*(unit_direction.Y() + 1.0f);
-        return (1.0f-a)*Color(1.0f, 1.0f, 1.0f) + a*Color(0.5f, 0.7f, 1.0f);
-    }
-};
 
 int main() {
     // Image dimensions
@@ -138,54 +115,21 @@ int main() {
     Point3 h_pixel00_loc = viewport_upper_left + 0.5f * (h_pixel_delta_u + h_pixel_delta_v);
     cudaMemcpyToSymbol(d_pixel00_loc, &h_pixel00_loc, sizeof(Point3));
 
-
     int num_pixels = image_height * image_width;
-
-/*     // Generate indices for each pixel
-    thrust::device_vector<int> d_x(image_width);
-    CUDA_CHECK_ERROR();  // Check for errors after operation
-
-    thrust::device_vector<int> d_y(image_height);
-    CUDA_CHECK_ERROR();  // Check for errors after operation
-
-
-    thrust::sequence(thrust::device, d_x.begin(), d_x.end());
-    thrust::sequence(thrust::device, d_y.begin(), d_y.end());
-
-    // Create a Cartesian product of the indices
-    auto begin = thrust::make_zip_iterator(thrust::make_tuple(
-        thrust::make_permutation_iterator(d_x.begin(), thrust::counting_iterator<int>(0)),
-        thrust::make_transform_iterator(thrust::counting_iterator<int>(0), thrust::placeholders::_1 / image_width)));
-
-    auto end = thrust::make_zip_iterator(thrust::make_tuple(
-        thrust::make_permutation_iterator(d_x.begin(), thrust::counting_iterator<int>(num_pixels)),
-        thrust::make_transform_iterator(thrust::counting_iterator<int>(num_pixels), thrust::placeholders::_1 / image_width)));
-
-    // Allocate memory for image on device
-    thrust::device_vector<Color> d_image(num_pixels);
-
-    // Compute the Colors using thrust::transform
-    thrust::transform(thrust::device, begin, end, d_image.begin(), calculate_Color(d_world));
-
-    // Copy the result back to the host
-    thrust::host_vector<Color> h_image(num_pixels);
-    thrust::copy(d_image.begin(), d_image.end(), h_image.begin()); */
 
     // Allocate memory for image on the device
     Color* d_image;
     cudaMalloc((void**)&d_image, num_pixels * sizeof(Color));
 
+    constexpr unsigned int tile_size_x = 8;
+    constexpr unsigned int tile_size_y = 8;
 
     // Set up grid and block dimensions
-    dim3 blockSize(16, 16);  // You can adjust this according to your needs
-    dim3 numBlocks((image_width + blockSize.x - 1) / blockSize.x, 
-                   (image_height + blockSize.y - 1) / blockSize.y);
-
-    // Initialize world data (this should be done appropriately)
-    //world d_world;  // You should initialize this with your world data
+    dim3 blocks(image_width / tile_size_x + 1, image_height / tile_size_y + 1);
+    dim3 threads(tile_size_x, tile_size_y);
 
     // Call the kernel
-    process_image_kernel<<<numBlocks, blockSize>>>(d_image, image_width, image_height, d_world);
+    process_image_kernel<<<blocks, threads>>>(d_image, image_width, image_height, d_world);
 
     // Allocate memory for image on the host
     Color* h_image = (Color*)malloc(num_pixels * sizeof(Color));
