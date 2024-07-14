@@ -13,8 +13,8 @@
 // Camera and viewport constants
 __constant__ Point3 d_camera_center;
 __constant__ Point3 d_pixel00_loc;
-__constant__ Point3 d_pixel_delta_u;
-__constant__ Point3 d_pixel_delta_v;
+__constant__ Point3 d_pixel_delta_x;
+__constant__ Point3 d_pixel_delta_y;
 
 class Camera {
   public:
@@ -37,19 +37,15 @@ class Camera {
 
         // Calculate the horizontal and vertical delta vectors from pixel to pixel.
         Vec3 h_pixel_delta_u = viewport_u / m_image_width;
-        GpuErrorCheck(cudaMemcpyToSymbol(d_pixel_delta_u, &h_pixel_delta_u, sizeof(Point3)));
+        GpuErrorCheck(cudaMemcpyToSymbol(d_pixel_delta_x, &h_pixel_delta_u, sizeof(Point3)));
         Vec3 h_pixel_delta_v = viewport_v / m_image_height;
-        GpuErrorCheck(cudaMemcpyToSymbol(d_pixel_delta_v, &h_pixel_delta_v, sizeof(Point3)));
+        GpuErrorCheck(cudaMemcpyToSymbol(d_pixel_delta_y, &h_pixel_delta_v, sizeof(Point3)));
 
         // Calculate the location of the upper left pixel.
         Point3 viewport_upper_left = h_camera_center - Vec3(0, 0, m_focal_length) - viewport_u / 2 - viewport_v / 2;
         Point3 h_pixel00_loc = viewport_upper_left + 0.5f * (h_pixel_delta_u + h_pixel_delta_v);
         GpuErrorCheck(cudaMemcpyToSymbol(d_pixel00_loc, &h_pixel00_loc, sizeof(Point3)));
     }
-
-/*     __host__ __device__ Ray GetRay(unsigned int u, unsigned int v) {
-        return Ray(d_camera_center, d_pixel00_loc + (u * d_pixel_delta_u) + (v * d_pixel_delta_v));
-    } */
 
   private:
     float m_aspect_ratio;
