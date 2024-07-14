@@ -4,6 +4,9 @@
 #include "vec3.h"
 
 struct Ray {
+    Point3 m_origin;
+    Vec3 m_direction;
+
     __host__ __device__ Ray() {}
     __host__ __device__ Ray(const Point3& origin, const Vec3& direction) : m_origin(origin), m_direction(direction) {}
 
@@ -13,7 +16,4 @@ struct Ray {
     __host__ __device__ Point3 At(float t) const {
         return m_origin + t * m_direction;
     }
-
-    Point3 m_origin;
-    Vec3 m_direction;
 };
