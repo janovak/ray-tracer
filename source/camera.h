@@ -32,7 +32,7 @@ class Camera {
         m_image_height = int(m_image_width / m_aspect_ratio);
         m_image_height = (m_image_height < 1) ? 1 : m_image_height;
 
-        m_viewport_width = m_viewport_height * (float(m_image_width) / m_image_height);
+        m_viewport_width = m_viewport_height * static_cast<float>(m_image_width) / m_image_height;
 
         Point3 h_camera_center = Point3(0, 0, 0);
         GpuErrorCheck(cudaMemcpyToSymbol(d_camera_center, &h_camera_center, sizeof(Point3)));

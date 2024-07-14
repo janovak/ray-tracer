@@ -44,13 +44,13 @@ __global__ void RenderScene(Color* image, unsigned int width, unsigned int heigh
 
         Color color(0, 0, 0);
         for(unsigned int s = 0; s < samples_per_pixel; ++s) {
-            const float x = float(idx) + curand_uniform(&local_rand_state);
-            const float y = float(idy) + curand_uniform(&local_rand_state);
+            const float x = static_cast<float>(idx) + curand_uniform(&local_rand_state);
+            const float y = static_cast<float>(idy) + curand_uniform(&local_rand_state);
             const Ray ray(GetRay(x, y));
             color += RayColor(ray, world);
         }
 
-        image[pixel_index] = color / float(samples_per_pixel);
+        image[pixel_index] = color / static_cast<float>(samples_per_pixel);
     }
 }
 
