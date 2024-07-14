@@ -13,7 +13,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Specify the source files
 set(SOURCE_FILES
-    ${PROJECT_SOURCE_DIR}/source/ray_tracer.cu
+    ${PROJECT_SOURCE_DIR}/source/main.cu
 )
 
 # Specify the output directory for the binaries
