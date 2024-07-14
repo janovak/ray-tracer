@@ -16,6 +16,12 @@ __constant__ Point3 d_pixel00_loc;
 __constant__ Point3 d_pixel_delta_x;
 __constant__ Point3 d_pixel_delta_y;
 
+__device__ Ray GetRay(unsigned int x, unsigned int y) {
+    const Point3 pixel_center = d_pixel00_loc + (x * d_pixel_delta_x) + (y * d_pixel_delta_y);
+    const Vec3 ray_direction = pixel_center - d_camera_center;
+    return Ray(d_camera_center, ray_direction);
+}
+
 class Camera {
   public:
     unsigned int m_image_width;

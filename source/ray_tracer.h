@@ -11,12 +11,6 @@
 #include "sphere.h"
 #include "ray.h"
 
-__device__ Ray GetRay(unsigned int x, unsigned int y) {
-    const Point3 pixel_center = d_pixel00_loc + (x * d_pixel_delta_x) + (y * d_pixel_delta_y);
-    const Vec3 ray_direction = pixel_center - d_camera_center;
-    return Ray(d_camera_center, ray_direction);
-}
-
 __device__ Color RayColor(const Ray& ray, Hittable** world) {
     HitRecord rec;
     if ((*world)->Hit(ray, Interval(0, kInfinity), rec)) {
