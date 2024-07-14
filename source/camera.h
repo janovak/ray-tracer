@@ -16,7 +16,7 @@ __constant__ Point3 d_pixel00_loc;
 __constant__ Point3 d_pixel_delta_x;
 __constant__ Point3 d_pixel_delta_y;
 
-__device__ Ray GetRay(unsigned int x, unsigned int y) {
+__device__ Ray GetRay(float x, float y) {
     const Point3 pixel_center = d_pixel00_loc + (x * d_pixel_delta_x) + (y * d_pixel_delta_y);
     const Vec3 ray_direction = pixel_center - d_camera_center;
     return Ray(d_camera_center, ray_direction);
@@ -38,18 +38,18 @@ class Camera {
         GpuErrorCheck(cudaMemcpyToSymbol(d_camera_center, &h_camera_center, sizeof(Point3)));
 
         // Calculate the vectors across the horizontal and down the vertical viewport edges.
-        Vec3 viewport_u = Vec3(m_viewport_width, 0, 0);
-        Vec3 viewport_v = Vec3(0, -m_viewport_height, 0);
+        Vec3 viewport_x = Vec3(m_viewport_width, 0, 0);
+        Vec3 viewport_y = Vec3(0, -m_viewport_height, 0);
 
         // Calculate the horizontal and vertical delta vectors from pixel to pixel.
-        Vec3 h_pixel_delta_u = viewport_u / m_image_width;
-        GpuErrorCheck(cudaMemcpyToSymbol(d_pixel_delta_x, &h_pixel_delta_u, sizeof(Point3)));
-        Vec3 h_pixel_delta_v = viewport_v / m_image_height;
-        GpuErrorCheck(cudaMemcpyToSymbol(d_pixel_delta_y, &h_pixel_delta_v, sizeof(Point3)));
+        Vec3 h_pixel_delta_x = viewport_x / m_image_width;
+        GpuErrorCheck(cudaMemcpyToSymbol(d_pixel_delta_x, &h_pixel_delta_x, sizeof(Point3)));
+        Vec3 h_pixel_delta_y = viewport_y / m_image_height;
+        GpuErrorCheck(cudaMemcpyToSymbol(d_pixel_delta_y, &h_pixel_delta_y, sizeof(Point3)));
 
         // Calculate the location of the upper left pixel.
-        Point3 viewport_upper_left = h_camera_center - Vec3(0, 0, m_focal_length) - viewport_u / 2 - viewport_v / 2;
-        Point3 h_pixel00_loc = viewport_upper_left + 0.5f * (h_pixel_delta_u + h_pixel_delta_v);
+        Point3 viewport_xpper_left = h_camera_center - Vec3(0, 0, m_focal_length) - viewport_x / 2 - viewport_y / 2;
+        Point3 h_pixel00_loc = viewport_xpper_left + 0.5f * (h_pixel_delta_x + h_pixel_delta_y);
         GpuErrorCheck(cudaMemcpyToSymbol(d_pixel00_loc, &h_pixel00_loc, sizeof(Point3)));
     }
 
