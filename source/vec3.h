@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cuda_runtime.h>
 #include <iostream>
+
+#include <cuda_runtime.h>
 
 template <typename T>
 class Vec3Base {
@@ -32,7 +33,7 @@ class Vec3Base {
     }
 
     __host__ __device__ Vec3Base<T>& operator/=(float t) {
-        return *this *= 1/t;
+        return *this *= 1 / t;
     }
 
     template<typename U = T, typename std::enable_if<!std::is_same<U, void>::value>::type* = nullptr>
@@ -45,7 +46,7 @@ class Vec3Base {
     }
 
     __host__ __device__ float LengthSquared() const {
-        return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
+        return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
     }
 
   protected:
@@ -78,7 +79,7 @@ __host__ __device__ Vec3Base<T> operator*(const Vec3Base<T>& u, const Vec3Base<T
 
 template <typename T>
 __host__ __device__ Vec3Base<T> operator*(float t, const Vec3Base<T>& v) {
-    return Vec3Base<T>(t*v[0], t*v[1], t*v[2]);
+    return Vec3Base<T>(t * v[0], t * v[1], t * v[2]);
 }
 
 template <typename T>
@@ -88,7 +89,7 @@ __host__ __device__ Vec3Base<T> operator*(const Vec3Base<T>& v, float t) {
 
 template <typename T>
 __host__ __device__ Vec3Base<T> operator/(const Vec3Base<T>& v, float t) {
-    return (1/t) * v;
+    return (1 / t) * v;
 }
 
 template <typename T>
@@ -98,14 +99,14 @@ __host__ __device__ float Dot(const Vec3Base<T>& u, const Vec3Base<T>& v) {
          + u[2] * v[2];
 }
 
-template <typename T>
-__host__ __device__ Vec3Base<T> Cross(const Vec3Base<T>& u, const Vec3Base<T>& v) {
-    return Vec3Base<T>(u[1] * v[2] - u[2] * v[1],
+// These functions are only applicable to Vec3s and not all Vec3Base<T>s
+
+__host__ __device__ Vec3 Cross(const Vec3& u, const Vec3& v) {
+    return Vec3(u[1] * v[2] - u[2] * v[1],
                         u[2] * v[0] - u[0] * v[2],
                         u[0] * v[1] - u[1] * v[0]);
 }
 
-template <typename T>
-__host__ __device__ Vec3Base<T> UnitVector(const Vec3Base<T>& v) {
+__host__ __device__ Vec3 UnitVector(const Vec3& v) {
     return v / v.Length();
 }
