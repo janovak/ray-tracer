@@ -12,15 +12,25 @@
 #include "sphere.h"
 #include "ray.h"
 
-__device__ Color RayColor(const Ray& ray, Hittable** world) {
-    HitRecord rec;
-    if ((*world)->Hit(ray, Interval(0, kInfinity), rec)) {
-        return 0.5f * Color(rec.m_normal.X() + 1.0f, rec.m_normal.Y() + 1.0f, rec.m_normal.Z() + 1.0f);
-    } else {
-        const Vec3 unit_direction = UnitVector(ray.Direction());
-        float a = 0.5f * (unit_direction.Y() + 1.0f);
-        return (1.0f - a) * Color(1.0f, 1.0f, 1.0f) + a * Color(0.5f, 0.7f, 1.0f);
+__device__ Color RayColor(const Ray& ray, Hittable** world, curandState* rand_state) {
+    Ray current_ray = ray;
+    float current_attentuation = 1.0f;
+
+    // Iterate a maximum of 50 times rather than trust that we'll reach the end of our recursion before hitting a stack overflow.
+    for (unsigned int i = 0; i < 50; ++i) {
+        HitRecord rec;
+        if ((*world)->Hit(current_ray, Interval(0.001f, kInfinity), rec)) {
+            current_ray = rec.RandomOnHemisphere(rand_state);
+            current_attentuation *= 0.5f;
+        } else {
+            const Vec3 unit_direction = UnitVector(current_ray.Direction());
+            float a = 0.5f * (unit_direction.Y() + 1.0f);
+            Color c = (1.0f - a) * Color(1.0f, 1.0f, 1.0f) + a * Color(0.5f, 0.7f, 1.0f);
+            return current_attentuation * c;
+        }
     }
+
+    return Color(0.0, 0.0, 0.0); // Exceeded 50 iterations
 }
 
 __global__ void RenderInit(unsigned int width, unsigned int height, curandState *rand_state) {
@@ -47,7 +57,7 @@ __global__ void RenderScene(Color* image, unsigned int width, unsigned int heigh
             const float x = static_cast<float>(idx) + curand_uniform(&local_rand_state);
             const float y = static_cast<float>(idy) + curand_uniform(&local_rand_state);
             const Ray ray(GetRay(x, y));
-            color += RayColor(ray, world);
+            color += RayColor(ray, world, &local_rand_state);
         }
 
         image[pixel_index] = color / static_cast<float>(samples_per_pixel);

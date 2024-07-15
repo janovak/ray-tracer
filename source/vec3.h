@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include <cuda_runtime.h>
+#include <curand_kernel.h>
 
 template <typename T>
 class Vec3Base {
@@ -47,6 +48,10 @@ class Vec3Base {
 
     __host__ __device__ float LengthSquared() const {
         return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
+    }
+
+    static __device__ Vec3Base<T> Random(curandState* rand_state) {
+        return Vec3Base<T>(curand_uniform(rand_state), curand_uniform(rand_state), curand_uniform(rand_state));
     }
 
   protected:
@@ -109,4 +114,16 @@ __host__ __device__ Vec3 Cross(const Vec3& u, const Vec3& v) {
 
 __host__ __device__ Vec3 UnitVector(const Vec3& v) {
     return v / v.Length();
+}
+
+__device__ Vec3 RandomInUnitSphere(curandState* rand_state) {
+    Vec3 point;
+    do {
+        point = 2.0f * Vec3::Random(rand_state) - Vec3(1,1,1);
+    } while (point.LengthSquared() >= 1.0f);
+    return point;
+}
+
+__device__ Vec3 RandomUnitVector(curandState* rand_state) {
+    return UnitVector(RandomInUnitSphere(rand_state));
 }
