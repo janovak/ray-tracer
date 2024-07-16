@@ -48,3 +48,34 @@ class Metal : public Material {
     Color m_albedo;
     float m_fuzz;
 };
+
+class Dielectric : public Material {
+  public:
+    __device__ Dielectric(float refraction_index) : m_refraction_index(refraction_index) {}
+
+    __device__ bool Scatter(const Ray& r_in, const HitRecord& hit_record, Color& attenuation, Ray& scattered, curandState* rand_state) const override {
+        attenuation = Color(1.0, 1.0, 1.0);
+        float refraction_index = hit_record.m_front_face ? (1.0 / m_refraction_index) : m_refraction_index;
+
+        Vec3 unit_direction = UnitVector(r_in.Direction());
+        float cos_theta = fminf(Dot(-unit_direction, hit_record.m_normal), 1.0f);
+        float sin_theta = sqrt(1.0f - cos_theta * cos_theta);
+
+        bool cannot_refract = refraction_index * sin_theta > 1.0f;
+        Vec3 direction;
+
+        if (cannot_refract) {
+            direction = Reflect(unit_direction, hit_record.m_normal);
+        } else {
+            direction = Refract(unit_direction, hit_record.m_normal, refraction_index);
+        }
+
+        scattered = Ray(hit_record.m_point, direction);
+        return true;
+    }
+
+  private:
+    // Refractive index in vacuum or air, or the ratio of the material's refractive index over
+    // the refractive index of the enclosing media
+    float m_refraction_index;
+};

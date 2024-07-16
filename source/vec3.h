@@ -143,6 +143,14 @@ __device__ Vec3 RandomUnitVector(curandState* rand_state) {
     return UnitVector(RandomInUnitSphere(rand_state));
 }
 
-__device__ Vec3 Reflect(const Vec3& v, const Vec3& n) {
-    return v - 2.0f * Dot(v,n)*n;
+__device__ Vec3 Reflect(const Vec3& vector, const Vec3& normal) {
+    return vector - 2.0f * Dot(vector, normal) * normal;
+}
+
+__device__ Vec3 Refract(const Vec3& vector, const Vec3& normal, float refraction) {
+    Vec3 unit_vector = UnitVector(vector);
+    float cos_theta = fminf(Dot(-unit_vector, normal), 1.0f);
+    Vec3 refracted_direction_perp =  refraction * (unit_vector + cos_theta * normal);
+    Vec3 refracted_direction_parallel = -sqrt(fabsf(1.0f - refracted_direction_perp.LengthSquared())) * normal;
+    return refracted_direction_perp + refracted_direction_parallel;
 }
