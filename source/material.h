@@ -34,15 +34,17 @@ class Lambertian : public Material {
 
 class Metal : public Material {
   public:
-    __device__ Metal(const Color& albedo) : m_albedo(albedo) {}
+    __device__ Metal(const Color& albedo, float fuzz) : m_albedo(albedo), m_fuzz(fuzz < 1 ? fuzz : 1) {}
 
     __device__ bool Scatter(const Ray& r_in, const HitRecord& hit_record, Color& attenuation, Ray& scattered, curandState* rand_state) const override {
         Vec3 reflected = Reflect(r_in.Direction(), hit_record.m_normal);
+        reflected = UnitVector(reflected) + m_fuzz * RandomUnitVector(rand_state);
         scattered = Ray(hit_record.m_point, reflected);
         attenuation = m_albedo;
-        return true;
+        return Dot(scattered.Direction(), hit_record.m_normal) > 0;
     }
 
   private:
     Color m_albedo;
+    float m_fuzz;
 };

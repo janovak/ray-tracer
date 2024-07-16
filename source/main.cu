@@ -12,8 +12,8 @@ constexpr unsigned int SCENE_ELEMENTS = 4;
 __global__ void InitScene(Hittable **d_list, Hittable **d_world) {
     d_list[0] = new Sphere(Point3(0, 0, -1), 0.5f, new Lambertian(Color(0.8, 0.3, 0.3)));
     d_list[1] = new Sphere(Point3(0, -100.5f, -1), 100, new Lambertian(Color(0.8, 0.8, 0.0)));
-    d_list[2] = new Sphere(Point3(1, 0, -1), 0.5, new Metal(Color(0.8, 0.6, 0.2)));
-    d_list[3] = new Sphere(Point3(-1, 0, -1), 0.5, new Metal(Color(0.8, 0.8, 0.8)));
+    d_list[2] = new Sphere(Point3(1, 0, -1), 0.5, new Metal(Color(0.8, 0.6, 0.2), 0.3));
+    d_list[3] = new Sphere(Point3(-1, 0, -1), 0.5, new Metal(Color(0.8, 0.8, 0.8), 1.0));
     *d_world = new HittableList(d_list, SCENE_ELEMENTS);
 }
 
