@@ -11,9 +11,8 @@
 struct Sphere : public Hittable {
     Point3 m_center;
     float m_radius;
-    Material* m_material;
 
-    __host__ __device__ Sphere(const Point3& center, float radius, Material* material) : m_center(center), m_radius(fmaxf(0,radius)), m_material(material) {}
+    __host__ __device__ Sphere(const Point3& center, float radius, Material* material) : m_center(center), m_radius(fmaxf(0,radius)), Hittable(material) {}
 
     __host__ __device__ bool Hit(const Ray& ray, Interval ray_t, HitRecord& hit_record) const override {
         Vec3 oc = m_center - ray.Origin();

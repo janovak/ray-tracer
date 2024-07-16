@@ -31,3 +31,18 @@ class Lambertian : public Material {
   private:
     Color m_albedo;
 };
+
+class Metal : public Material {
+  public:
+    __device__ Metal(const Color& albedo) : m_albedo(albedo) {}
+
+    __device__ bool Scatter(const Ray& r_in, const HitRecord& hit_record, Color& attenuation, Ray& scattered, curandState* rand_state) const override {
+        Vec3 reflected = Reflect(r_in.Direction(), hit_record.m_normal);
+        scattered = Ray(hit_record.m_point, reflected);
+        attenuation = m_albedo;
+        return true;
+    }
+
+  private:
+    Color m_albedo;
+};

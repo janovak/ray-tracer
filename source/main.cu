@@ -7,15 +7,21 @@
 #include "ray_tracer.h"
 #include "sphere.h"
 
+constexpr unsigned int SCENE_ELEMENTS = 4;
+
 __global__ void InitScene(Hittable **d_list, Hittable **d_world) {
-    *d_list = new Sphere(Point3(0, 0, -1), 0.5f, new Lambertian(Color(0.8, 0.3, 0.3)));
-    *(d_list+1) = new Sphere(Point3(0, -100.5f, -1), 100, new Lambertian(Color(0.8, 0.8, 0.0)));
-    *d_world = new HittableList(d_list, 2);
+    d_list[0] = new Sphere(Point3(0, 0, -1), 0.5f, new Lambertian(Color(0.8, 0.3, 0.3)));
+    d_list[1] = new Sphere(Point3(0, -100.5f, -1), 100, new Lambertian(Color(0.8, 0.8, 0.0)));
+    d_list[2] = new Sphere(Point3(1, 0, -1), 0.5, new Metal(Color(0.8, 0.6, 0.2)));
+    d_list[3] = new Sphere(Point3(-1, 0, -1), 0.5, new Metal(Color(0.8, 0.8, 0.8)));
+    *d_world = new HittableList(d_list, SCENE_ELEMENTS);
 }
 
 __global__ void FreeScene(Hittable **d_list, Hittable **d_world) {
-    delete *(d_list);
-    delete *(d_list+1);
+    for(unsigned int i = 0; i < SCENE_ELEMENTS; ++i) {
+        delete d_list[i]->m_material;
+        delete d_list[i];
+    }
     delete *d_world;
 }
 
@@ -24,7 +30,7 @@ int main() {
     Hittable** d_list;
     Hittable** d_world;
 
-    GpuErrorCheck(cudaMalloc((void**)&d_list, 2 * sizeof(Hittable*)));
+    GpuErrorCheck(cudaMalloc((void**)&d_list, SCENE_ELEMENTS * sizeof(Hittable*)));
     GpuErrorCheck(cudaMalloc((void**)&d_world, sizeof(Hittable*)));
 
     InitScene<<<1,1>>>(d_list, d_world);

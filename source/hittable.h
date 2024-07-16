@@ -29,5 +29,10 @@ struct HitRecord {
 };
 
 struct Hittable {
+    Material* m_material;
+
+    __host__ __device__ Hittable() {}
+    __host__ __device__ Hittable(Material* material) : m_material(material) {}
+
     __host__ __device__ virtual bool Hit(const Ray& ray, Interval ray_t, HitRecord& rec) const = 0;
 };

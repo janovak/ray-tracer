@@ -142,3 +142,7 @@ __device__ Vec3 RandomInUnitSphere(curandState* rand_state) {
 __device__ Vec3 RandomUnitVector(curandState* rand_state) {
     return UnitVector(RandomInUnitSphere(rand_state));
 }
+
+__device__ Vec3 Reflect(const Vec3& v, const Vec3& n) {
+    return v - 2.0f * Dot(v,n)*n;
+}
