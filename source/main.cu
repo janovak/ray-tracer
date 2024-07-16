@@ -3,13 +3,14 @@
 #include "camera.h"
 #include "hittable.h"
 #include "hittable_list.h"
+#include "material.h"
 #include "ray_tracer.h"
 #include "sphere.h"
 
 __global__ void InitScene(Hittable **d_list, Hittable **d_world) {
-    *(d_list)     = new Sphere(Point3(0, 0, -1), 0.5f);
-    *(d_list + 1) = new Sphere(Point3(0, -100.5f, -1), 100);
-    *d_world      = new HittableList(d_list, 2);
+    *d_list = new Sphere(Point3(0, 0, -1), 0.5f, new Lambertian(Color(0.8, 0.3, 0.3)));
+    *(d_list+1) = new Sphere(Point3(0, -100.5f, -1), 100, new Lambertian(Color(0.8, 0.8, 0.0)));
+    *d_world = new HittableList(d_list, 2);
 }
 
 __global__ void FreeScene(Hittable **d_list, Hittable **d_world) {

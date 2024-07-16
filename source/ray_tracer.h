@@ -14,14 +14,21 @@
 
 __device__ Color RayColor(const Ray& ray, Hittable** world, curandState* rand_state) {
     Ray current_ray = ray;
-    float current_attentuation = 1.0f;
+    Color current_attentuation = Color(1, 1, 1);
 
     // Iterate a maximum of 50 times rather than trust that we'll reach the end of our recursion before hitting a stack overflow.
     for (unsigned int i = 0; i < 50; ++i) {
         HitRecord hit_record;
         if ((*world)->Hit(current_ray, Interval(0.001f, kInfinity), hit_record)) {
-            current_ray = hit_record.RandomOnHemisphere(rand_state) + hit_record.m_normal;
-            current_attentuation *= 0.5f;
+            Ray scattered;
+            Color attenuation;
+
+            if (hit_record.m_material->Scatter(ray, hit_record, attenuation, scattered, rand_state)) {
+                current_attentuation *= attenuation;
+                current_ray = scattered;
+            } else {
+                return Color(0, 0, 0);
+            }
         } else {
             const Vec3 unit_direction = UnitVector(current_ray.Direction());
             float a = 0.5f * (unit_direction.Y() + 1.0f);
@@ -30,7 +37,7 @@ __device__ Color RayColor(const Ray& ray, Hittable** world, curandState* rand_st
         }
     }
 
-    return Color(0.0, 0.0, 0.0); // Exceeded 50 iterations
+    return Color(0, 0, 0); // Exceeded 50 iterations
 }
 
 __global__ void RenderInit(unsigned int width, unsigned int height, curandState *rand_state) {

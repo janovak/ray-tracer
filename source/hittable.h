@@ -3,11 +3,14 @@
 #include "interval.h"
 #include "ray.h"
 
+class Material;
+
 struct HitRecord {
     bool m_front_face;
     float m_t;
     Point3 m_point;
     Vec3 m_normal;
+    Material* m_material;
 
     // outward_normal is assumed to have unit length
     __host__ __device__ void SetFaceNormal(const Ray& ray, const Vec3& outward_normal) {

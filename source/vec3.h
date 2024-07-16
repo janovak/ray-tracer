@@ -26,6 +26,13 @@ class Vec3Base {
         return *this;
     }
 
+    __host__ __device__ Vec3Base<T>& operator*=(const Vec3Base<T>& v) {
+        e[0] *= v.e[0];
+        e[1] *= v.e[1];
+        e[2] *= v.e[2];
+        return *this;
+    }
+
     __host__ __device__ Vec3Base<T>& operator*=(float t) {
         e[0] *= t;
         e[1] *= t;
@@ -52,6 +59,12 @@ class Vec3Base {
 
     static __device__ Vec3Base<T> Random(curandState* rand_state) {
         return Vec3Base<T>(curand_uniform(rand_state), curand_uniform(rand_state), curand_uniform(rand_state));
+    }
+
+    __host__ __device__ bool NearZero() const {
+        // Return true if the vector is close to zero in all dimensions.
+        float c = 1e-8;
+        return (fabs(e[0]) < c) && (fabs(e[1]) < c) && (fabs(e[2]) < c);
     }
 
   protected:
@@ -118,9 +131,11 @@ __host__ __device__ Vec3 UnitVector(const Vec3& v) {
 
 __device__ Vec3 RandomInUnitSphere(curandState* rand_state) {
     Vec3 point;
+
     do {
         point = 2.0f * Vec3::Random(rand_state) - Vec3(1,1,1);
     } while (point.LengthSquared() >= 1.0f);
+
     return point;
 }
 
