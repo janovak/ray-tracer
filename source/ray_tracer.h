@@ -18,9 +18,9 @@ __device__ Color RayColor(const Ray& ray, Hittable** world, curandState* rand_st
 
     // Iterate a maximum of 50 times rather than trust that we'll reach the end of our recursion before hitting a stack overflow.
     for (unsigned int i = 0; i < 50; ++i) {
-        HitRecord rec;
-        if ((*world)->Hit(current_ray, Interval(0.001f, kInfinity), rec)) {
-            current_ray = rec.RandomOnHemisphere(rand_state);
+        HitRecord hit_record;
+        if ((*world)->Hit(current_ray, Interval(0.001f, kInfinity), hit_record)) {
+            current_ray = hit_record.RandomOnHemisphere(rand_state) + hit_record.m_normal;
             current_attentuation *= 0.5f;
         } else {
             const Vec3 unit_direction = UnitVector(current_ray.Direction());

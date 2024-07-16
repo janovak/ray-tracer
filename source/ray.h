@@ -17,3 +17,11 @@ struct Ray {
         return m_origin + t * m_direction;
     }
 };
+
+__host__ __device__ Ray operator+(const Ray& u, const Vec3& v) {
+    return Ray(u.Origin(), u.Direction() + v);
+}
+
+__host__ __device__ Ray operator-(const Ray& u, const Vec3& v) {
+    return Ray(u.Origin(), u.Direction() - v);
+}
