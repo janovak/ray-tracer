@@ -64,7 +64,7 @@ class Dielectric : public Material {
         bool cannot_refract = refraction_index * sin_theta > 1.0f;
         Vec3 direction;
 
-        if (cannot_refract) {
+        if (cannot_refract || Reflectance(cos_theta, refraction_index) > curand_uniform(rand_state)) {
             direction = Reflect(unit_direction, hit_record.m_normal);
         } else {
             direction = Refract(unit_direction, hit_record.m_normal, refraction_index);
@@ -78,4 +78,11 @@ class Dielectric : public Material {
     // Refractive index in vacuum or air, or the ratio of the material's refractive index over
     // the refractive index of the enclosing media
     float m_refraction_index;
+
+    static __device__ float Reflectance(float cosine, float refraction_index) {
+        // Use Schlick's approximation for reflectance.
+        float r0 = (1.0f - refraction_index) / (1.0f + refraction_index);
+        r0 = r0 * r0;
+        return r0 + (1.0f - r0) * pow((1.0f - cosine), 5.0f);
+    }
 };
