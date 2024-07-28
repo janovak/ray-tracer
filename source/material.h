@@ -16,9 +16,9 @@ class Lambertian : public Material {
     __device__ Lambertian(const Color& albedo) : m_albedo(albedo) {}
 
     __device__ bool Scatter(const Ray& r_in, const HitRecord& hit_record, Color& attenuation, Ray& scattered, curandState* rand_state) const override {
-        Vec3 scatter_direction = hit_record.m_normal + RandomUnitVector(rand_state);
+        Vec3 scatter_direction = hit_record.m_normal + RandomInUnitSphere(rand_state);
         
-        // Catch degenerate scatter direction
+        // Catch degenerate scatter Direction
         if (scatter_direction.NearZero()) {
             scatter_direction = hit_record.m_normal;
         }
@@ -38,7 +38,7 @@ class Metal : public Material {
 
     __device__ bool Scatter(const Ray& r_in, const HitRecord& hit_record, Color& attenuation, Ray& scattered, curandState* rand_state) const override {
         Vec3 reflected = Reflect(r_in.Direction(), hit_record.m_normal);
-        reflected = UnitVector(reflected) + m_fuzz * RandomUnitVector(rand_state);
+        reflected = UnitVector(reflected) + m_fuzz * RandomInUnitSphere(rand_state);
         scattered = Ray(hit_record.m_point, reflected);
         attenuation = m_albedo;
         return Dot(scattered.Direction(), hit_record.m_normal) > 0;
@@ -54,6 +54,53 @@ class Dielectric : public Material {
     __device__ Dielectric(float refraction_index) : m_refraction_index(refraction_index) {}
 
     __device__ bool Scatter(const Ray& r_in, const HitRecord& hit_record, Color& attenuation, Ray& scattered, curandState* rand_state) const override {
+/*         Vec3 outward_normal;
+        Vec3 reflected = Reflect(r_in.Direction(), rec.m_normal);
+        float ni_over_nt;
+        attenuation = Color(1.0, 1.0, 1.0);
+        Vec3 refracted;
+        float reflect_prob;
+        float cosine;
+        if (Dot(r_in.Direction(), rec.m_normal) > 0.0f) {
+            outward_normal = -rec.m_normal;
+            ni_over_nt = m_refraction_index;
+            cosine = Dot(r_in.Direction(), rec.m_normal) / r_in.Direction().Length();
+            cosine = sqrt(1.0f - m_refraction_index*m_refraction_index*(1-cosine*cosine));
+        }
+        else {
+            outward_normal = rec.m_normal;
+            ni_over_nt = 1.0f / m_refraction_index;
+            cosine = -Dot(r_in.Direction(), rec.m_normal) / r_in.Direction().Length();
+        }
+        if (Refract(r_in.Direction(), outward_normal, ni_over_nt, refracted))
+            reflect_prob = Reflectance(cosine, m_refraction_index);
+        else
+            reflect_prob = 1.0f;
+        if (curand_uniform(rand_state) <= reflect_prob)
+            scattered = Ray(rec.m_point, reflected);
+        else
+            scattered = Ray(rec.m_point, refracted);
+        return true; */
+
+/*         attenuation = Color(1.0, 1.0, 1.0);
+        double ri = hit_record.m_front_face ? (1.0/m_refraction_index) : m_refraction_index;
+
+        Vec3 unit_direction = UnitVector(r_in.Direction());
+        double cos_theta = fminf(Dot(-unit_direction, hit_record.m_normal), 1.0);
+        double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
+
+        bool cannot_refract = ri * sin_theta > 1.0;
+        Vec3 direction;
+
+        if (cannot_refract || Reflectance(cos_theta, ri) > .5)//curand_uniform(rand_state))
+            direction = Reflect(unit_direction, hit_record.m_normal);
+        else
+            direction = Refract(unit_direction, hit_record.m_normal, ri);
+
+        scattered = Ray(hit_record.m_point, direction);
+        return true; */
+
+
         attenuation = Color(1.0, 1.0, 1.0);
         float refraction_index = hit_record.m_front_face ? (1.0 / m_refraction_index) : m_refraction_index;
 
@@ -62,15 +109,15 @@ class Dielectric : public Material {
         float sin_theta = sqrt(1.0f - cos_theta * cos_theta);
 
         bool cannot_refract = refraction_index * sin_theta > 1.0f;
-        Vec3 direction;
+        Vec3 Direction;
 
-        if (cannot_refract || Reflectance(cos_theta, refraction_index) > curand_uniform(rand_state)) {
-            direction = Reflect(unit_direction, hit_record.m_normal);
+        if (cannot_refract || Reflectance(cos_theta, refraction_index) > RandomFloat(rand_state)) {
+            Direction = Reflect(unit_direction, hit_record.m_normal);
         } else {
-            direction = Refract(unit_direction, hit_record.m_normal, refraction_index);
+            Direction = Refract(unit_direction, hit_record.m_normal, refraction_index);
         }
 
-        scattered = Ray(hit_record.m_point, direction);
+        scattered = Ray(hit_record.m_point, Direction);
         return true;
     }
 

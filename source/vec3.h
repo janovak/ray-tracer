@@ -5,6 +5,8 @@
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 
+#include "cuda_helpers.h"
+
 template <typename T>
 class Vec3Base {
   public:
@@ -58,7 +60,11 @@ class Vec3Base {
     }
 
     static __device__ Vec3Base<T> Random(curandState* rand_state) {
-        return Vec3Base<T>(curand_uniform(rand_state), curand_uniform(rand_state), curand_uniform(rand_state));
+        return Vec3Base<T>(RandomFloat(rand_state), RandomFloat(rand_state), RandomFloat(rand_state));
+    }
+
+    static __device__ Vec3Base<T> Random(float min, float max, curandState* rand_state) {
+        return Vec3Base<T>(RandomFloat(min, max, rand_state), RandomFloat(min, max, rand_state), RandomFloat(min, max, rand_state));
     }
 
     __host__ __device__ bool NearZero() const {
@@ -121,8 +127,8 @@ __host__ __device__ float Dot(const Vec3Base<T>& u, const Vec3Base<T>& v) {
 
 __host__ __device__ Vec3 Cross(const Vec3& u, const Vec3& v) {
     return Vec3(u[1] * v[2] - u[2] * v[1],
-                        u[2] * v[0] - u[0] * v[2],
-                        u[0] * v[1] - u[1] * v[0]);
+                u[2] * v[0] - u[0] * v[2],
+                u[0] * v[1] - u[1] * v[0]);
 }
 
 __host__ __device__ Vec3 UnitVector(const Vec3& v) {
@@ -146,6 +152,20 @@ __device__ Vec3 RandomUnitVector(curandState* rand_state) {
 __device__ Vec3 Reflect(const Vec3& vector, const Vec3& normal) {
     return vector - 2.0f * Dot(vector, normal) * normal;
 }
+
+/* __device__ bool Refract(const Vec3& v, const Vec3& n, float ni_over_nt, Vec3& refracted) {
+    Vec3 uv = UnitVector(v);
+    float dt = Dot(uv, n);
+    float discriminant = 1.0f - ni_over_nt*ni_over_nt*(1-dt*dt);
+    if (discriminant > 0) {
+        refracted = ni_over_nt*(uv - n*dt) - n*sqrt(discriminant);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+} */
 
 __device__ Vec3 Refract(const Vec3& vector, const Vec3& normal, float refraction) {
     Vec3 unit_vector = UnitVector(vector);

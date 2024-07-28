@@ -23,7 +23,7 @@ __device__ Color RayColor(const Ray& ray, Hittable** world, curandState* rand_st
             Ray scattered;
             Color attenuation;
 
-            if (hit_record.m_material->Scatter(ray, hit_record, attenuation, scattered, rand_state)) {
+            if (hit_record.m_material->Scatter(current_ray, hit_record, attenuation, scattered, rand_state)) {
                 current_attentuation *= attenuation;
                 current_ray = scattered;
             } else {
@@ -61,11 +61,12 @@ __global__ void RenderScene(Color* image, unsigned int width, unsigned int heigh
 
         Color color(0, 0, 0);
         for(unsigned int s = 0; s < samples_per_pixel; ++s) {
-            const float x = static_cast<float>(idx) + curand_uniform(&local_rand_state);
-            const float y = static_cast<float>(idy) + curand_uniform(&local_rand_state);
-            const Ray ray(GetRay(x, y));
+            const float x = static_cast<float>(idx);// + curand_uniform(&local_rand_state);
+            const float y = static_cast<float>(idy);// + curand_uniform(&local_rand_state);
+            const Ray ray(GetRay(x, y, &local_rand_state));
             color += RayColor(ray, world, &local_rand_state);
         }
+        rand_state[pixel_index] = local_rand_state;
 
         image[pixel_index] = color / static_cast<float>(samples_per_pixel);
     }

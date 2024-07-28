@@ -1,19 +1,27 @@
 #include <cuda_runtime.h>
 
 #include "camera.h"
+#include "cuda_helpers.h"
 #include "hittable.h"
 #include "hittable_list.h"
 #include "material.h"
 #include "ray_tracer.h"
 #include "sphere.h"
 
-constexpr unsigned int SCENE_ELEMENTS = 4;
+constexpr unsigned int SCENE_ELEMENTS = 5;
 
 __global__ void InitScene(Hittable **d_list, Hittable **d_world) {
-    d_list[0] = new Sphere(Point3(0, 0, -1.2), 0.5, new Lambertian(Color(0.1, 0.2, 0.5)));
-    d_list[1] = new Sphere(Point3(0, -100.5, -1), 100, new Lambertian(Color(0.8, 0.8, 0.0)));
-    d_list[2] = new Sphere(Point3(1, 0, -1), 0.5, new Metal(Color(0.8, 0.6, 0.2), 1.0));
-    d_list[3] = new Sphere(Point3(-1, 0, -1), 0.5, new Dielectric(1.0 / 1.33));
+    Material* yellow = new Lambertian(Color(0.8, 0.8, 0.0));
+    Material* blue = new Lambertian(Color(0.1, 0.2, 0.5));
+    Material* brass = new Metal(Color(0.8, 0.6, 0.2), 1.0);
+    Material* glass = new Dielectric(1.5);
+    Material* air_bubble_in_glass = new Dielectric(1.0f / 1.5f);
+
+    d_list[0] = new Sphere(Point3(0, -100.5, -1), 100, yellow);
+    d_list[1] = new Sphere(Point3(0, 0, -1.2), 0.5, blue);
+    d_list[2] = new Sphere(Point3(1, 0, -1), 0.5, brass);
+    d_list[3] = new Sphere(Point3(-1, 0, -1), 0.5, glass);
+    d_list[4] = new Sphere(Point3(-1, 0, -1), 0.4, air_bubble_in_glass);
     *d_world = new HittableList(d_list, SCENE_ELEMENTS);
 }
 

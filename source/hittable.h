@@ -20,7 +20,7 @@ struct HitRecord {
 
     __device__ Ray RandomOnHemisphere(curandState* rand_state) {
         Vec3 on_unit_sphere = RandomUnitVector(rand_state);
-        if (Dot(on_unit_sphere, m_normal) > 0.0) { // In the same hemisphere as the normal
+        if (Dot(on_unit_sphere, m_normal) > 0) { // In the same hemisphere as the normal
             return Ray(m_point, on_unit_sphere);
         } else {
             return Ray(m_point, -on_unit_sphere);
