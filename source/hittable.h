@@ -13,7 +13,7 @@ struct HitRecord {
     Material* m_material;
 
     // outward_normal is assumed to have unit length
-    __host__ __device__ void SetFaceNormal(const Ray& ray, const Vec3& outward_normal) {
+    __device__ void SetFaceNormal(const Ray& ray, const Vec3& outward_normal) {
         m_front_face = Dot(ray.Direction(), outward_normal) < 0;
         m_normal = m_front_face ? outward_normal : -outward_normal;
     }
@@ -34,5 +34,5 @@ struct Hittable {
     __host__ __device__ Hittable() {}
     __host__ __device__ Hittable(Material* material) : m_material(material) {}
 
-    __host__ __device__ virtual bool Hit(const Ray& ray, Interval ray_t, HitRecord& rec) const = 0;
+    __device__ virtual bool Hit(const Ray& ray, Interval ray_t, HitRecord& rec) const = 0;
 };

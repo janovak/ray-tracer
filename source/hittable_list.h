@@ -11,7 +11,7 @@ struct HittableList : public Hittable {
     __host__ __device__  HittableList() {}
     __host__ __device__  HittableList(Hittable **list, int size): m_list(list), m_size(size) {}
 
-    __host__ __device__ bool Hit(const Ray& ray, Interval ray_t, HitRecord& rec) const override {
+    __device__ bool Hit(const Ray& ray, Interval ray_t, HitRecord& rec) const override {
         HitRecord temp_rec;
         bool hit_anything = false;
         auto closest_so_far = ray_t.m_max;

@@ -14,12 +14,13 @@ inline void GpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 
 // Utility Functions
 
-inline float degrees_to_radians(float degrees) {
+__device__ float DegreesToRadians(float degrees) {
     return degrees * kPi / 180.0f;
 }
 
 __device__ float RandomFloat(curandState* rand_state) {
-    return (curand_uniform(rand_state) - 1.0f) * -1.0f;
+   // curand_uniform returns (0,1], so use the following to return a value [0,1)
+   return (curand_uniform(rand_state) - 1.0f) * -1.0f;
 }
 
 __device__ float RandomFloat(float min, float max, curandState* rand_state) {

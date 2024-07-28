@@ -61,8 +61,8 @@ __global__ void RenderScene(Color* image, unsigned int width, unsigned int heigh
 
         Color color(0, 0, 0);
         for(unsigned int s = 0; s < samples_per_pixel; ++s) {
-            const float x = static_cast<float>(idx);// + curand_uniform(&local_rand_state);
-            const float y = static_cast<float>(idy);// + curand_uniform(&local_rand_state);
+            const float x = static_cast<float>(idx) + RandomFloat(&local_rand_state);
+            const float y = static_cast<float>(idy) + RandomFloat(&local_rand_state);
             const Ray ray(GetRay(x, y, &local_rand_state));
             color += RayColor(ray, world, &local_rand_state);
         }

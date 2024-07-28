@@ -153,20 +153,6 @@ __device__ Vec3 Reflect(const Vec3& vector, const Vec3& normal) {
     return vector - 2.0f * Dot(vector, normal) * normal;
 }
 
-/* __device__ bool Refract(const Vec3& v, const Vec3& n, float ni_over_nt, Vec3& refracted) {
-    Vec3 uv = UnitVector(v);
-    float dt = Dot(uv, n);
-    float discriminant = 1.0f - ni_over_nt*ni_over_nt*(1-dt*dt);
-    if (discriminant > 0) {
-        refracted = ni_over_nt*(uv - n*dt) - n*sqrt(discriminant);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-} */
-
 __device__ Vec3 Refract(const Vec3& vector, const Vec3& normal, float refraction) {
     Vec3 unit_vector = UnitVector(vector);
     float cos_theta = fminf(Dot(-unit_vector, normal), 1.0f);
