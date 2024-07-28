@@ -1,6 +1,5 @@
 #pragma once
 
-#include "point3.h"
 #include "vec3.h"
 
 struct Ray {

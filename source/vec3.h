@@ -78,6 +78,7 @@ class Vec3Base {
 };
 
 using Vec3 = Vec3Base<void>;
+using Point3 = Vec3;
 
 // Vector Utility Functions
 
@@ -116,14 +117,13 @@ __host__ __device__ Vec3Base<T> operator/(const Vec3Base<T>& v, float t) {
     return (1 / t) * v;
 }
 
-template <typename T>
-__host__ __device__ float Dot(const Vec3Base<T>& u, const Vec3Base<T>& v) {
+// These functions are only applicable to Vec3s and not all Vec3Base<T>s
+
+__host__ __device__ float Dot(const Vec3& u, const Vec3& v) {
     return u[0] * v[0]
          + u[1] * v[1]
          + u[2] * v[2];
 }
-
-// These functions are only applicable to Vec3s and not all Vec3Base<T>s
 
 __host__ __device__ Vec3 Cross(const Vec3& u, const Vec3& v) {
     return Vec3(u[1] * v[2] - u[2] * v[1],

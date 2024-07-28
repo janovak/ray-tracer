@@ -6,7 +6,6 @@
 #include "cuda_helpers.h"
 #include "hittable.h"
 #include "interval.h"
-#include "point3.h"
 #include "ray.h"
 #include "vec3.h"
 
@@ -49,8 +48,8 @@ class Camera {
         GpuErrorCheck(cudaMemcpyToSymbol(d_pixel_delta_y, &h_pixel_delta_y, sizeof(Point3)));
 
         // Calculate the location of the upper left pixel.
-        Point3 viewport_xpper_left = h_camera_center - Vec3(0, 0, m_focal_length) - viewport_x / 2 - viewport_y / 2;
-        Point3 h_pixel00_loc = viewport_xpper_left + 0.5f * (h_pixel_delta_x + h_pixel_delta_y);
+        Point3 viewport_xpper_left = h_camera_center - Point3(0, 0, m_focal_length) - (viewport_x / 2) - (viewport_y / 2);
+        Point3 h_pixel00_loc = viewport_xpper_left + 0.5f * Point3(h_pixel_delta_x + h_pixel_delta_y);
         GpuErrorCheck(cudaMemcpyToSymbol(d_pixel00_loc, &h_pixel00_loc, sizeof(Point3)));
     }
 

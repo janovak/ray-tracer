@@ -4,7 +4,6 @@
 
 #include "hittable.h"
 #include "material.h"
-#include "point3.h"
 #include "vec3.h"
 #include "ray.h"
 
