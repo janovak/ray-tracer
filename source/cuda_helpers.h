@@ -14,7 +14,7 @@ inline void GpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 
 // Utility Functions
 
-__device__ float DegreesToRadians(float degrees) {
+__host__ __device__ float DegreesToRadians(float degrees) {
     return degrees * kPi / 180.0f;
 }
 

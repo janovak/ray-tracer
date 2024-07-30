@@ -45,7 +45,7 @@ int main() {
     GpuErrorCheck(cudaDeviceSynchronize());
 
     // Render the scene
-    Camera camera(16.0f / 9.0f, 400);
+    Camera camera(16.0f / 9.0f, 400, 20.0f, Point3(-2, 2, 1), Point3(0, 0, -1), Vec3(0, 1, 0));
     RayTracer ray_tracer(camera, d_world);
     ray_tracer.Render();
 
