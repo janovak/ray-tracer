@@ -136,13 +136,21 @@ __host__ __device__ Vec3 UnitVector(const Vec3& v) {
 }
 
 __device__ Vec3 RandomInUnitSphere(curandState* rand_state) {
-    Vec3 point;
+    while (true) {
+        Vec3 point = Vec3::Random(-1.0f, 1.0f, rand_state);
+        if (point.LengthSquared() < 1.0f) {
+            return point;
+        }
+    }
+}
 
-    do {
-        point = 2.0f * Vec3::Random(rand_state) - Vec3(1,1,1);
-    } while (point.LengthSquared() >= 1.0f);
-
-    return point;
+__device__ Vec3 RandomInUnitDisk(curandState* rand_state) {
+    while (true) {
+        Vec3 point = Vec3(RandomFloat(-1.0f, 1.0f, rand_state), RandomFloat(-1.0f, 1.0f, rand_state), 0);
+        if (point.LengthSquared() < 1.0f) {
+            return point;
+        }
+    }
 }
 
 __device__ Vec3 RandomUnitVector(curandState* rand_state) {
