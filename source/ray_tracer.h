@@ -40,7 +40,7 @@ __device__ Color RayColor(const Ray& ray, Hittable** world, curandState* rand_st
     return Color(0, 0, 0); // Exceeded 50 iterations
 }
 
-__global__ void RenderInit(unsigned int width, unsigned int height, curandState *rand_state) {
+__global__ void RenderInit(unsigned int width, unsigned int height, curandState* rand_state) {
     const unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x;
     const unsigned int idy = threadIdx.y + blockIdx.y * blockDim.y;
 
