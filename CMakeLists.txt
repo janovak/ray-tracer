@@ -8,16 +8,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Set the CUDA version
 find_package(CUDA 12.5 REQUIRED)
 
-# Specify the include directories
-include_directories(${PROJECT_SOURCE_DIR}/include)
-
 # Specify the source files
 set(SOURCE_FILES
-    ${PROJECT_SOURCE_DIR}/source/main.cu
+    ${PROJECT_SOURCE_DIR}/src/main.cu
 )
 
 # Specify the output directory for the binaries
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bld)
 
 # Add the executable target
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
