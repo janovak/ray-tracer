@@ -137,7 +137,7 @@ __host__ __device__ Vec3 UnitVector(const Vec3& v) {
 
 __device__ Vec3 RandomInUnitSphere(curandState* rand_state) {
     while (true) {
-        Vec3 point = Vec3::Random(-1.0f, 1.0f, rand_state);
+        Vec3 point = Vec3::Random(-1.0, 1.0, rand_state);
         if (point.LengthSquared() < 1.0f) {
             return point;
         }
@@ -146,7 +146,7 @@ __device__ Vec3 RandomInUnitSphere(curandState* rand_state) {
 
 __device__ Vec3 RandomInUnitDisk(curandState* rand_state) {
     while (true) {
-        Vec3 point = Vec3(RandomFloat(-1.0f, 1.0f, rand_state), RandomFloat(-1.0f, 1.0f, rand_state), 0);
+        Vec3 point = Vec3(RandomFloat(-1.0, 1.0, rand_state), RandomFloat(-1.0, 1.0, rand_state), 0);
         if (point.LengthSquared() < 1.0f) {
             return point;
         }
@@ -163,7 +163,7 @@ __device__ Vec3 Reflect(const Vec3& vector, const Vec3& normal) {
 
 __device__ Vec3 Refract(const Vec3& vector, const Vec3& normal, float refraction) {
     Vec3 unit_vector = UnitVector(vector);
-    float cos_theta = fminf(Dot(-unit_vector, normal), 1.0f);
+    float cos_theta = fminf(Dot(-unit_vector, normal), 1.0);
     Vec3 refracted_direction_perp =  refraction * (unit_vector + cos_theta * normal);
     Vec3 refracted_direction_parallel = -sqrt(fabsf(1.0f - refracted_direction_perp.LengthSquared())) * normal;
     return refracted_direction_perp + refracted_direction_parallel;

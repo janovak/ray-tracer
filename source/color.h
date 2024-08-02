@@ -19,7 +19,7 @@ __host__ __device__ Color LinearToGamma(const Color& color) {
     Color gamma_corrected;
 
     auto linear_to_gamma_component = [](float linear_component) -> float {
-        if (linear_component > 0) {
+        if (linear_component > 0.0f) {
             return sqrt(linear_component);
         }
         return 0;
@@ -34,6 +34,6 @@ __host__ __device__ Color LinearToGamma(const Color& color) {
 
 __host__ std::ostream& operator<<(std::ostream& out, const Color& color) {
     // Gamma correct the pixel's color and translate the [0,1] component values to the byte range [0,255].
-    Color scaled = LinearToGamma(color) * 255.99;
+    Color scaled = LinearToGamma(color) * 255.99f;
     return out << static_cast<int>(scaled.R()) << ' ' << static_cast<int>(scaled.B()) << ' ' << static_cast<int>(scaled.G()) << '\n';
 }

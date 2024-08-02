@@ -32,7 +32,7 @@ __device__ Color RayColor(const Ray& ray, Hittable** world, curandState* rand_st
         } else {
             const Vec3 unit_direction = UnitVector(current_ray.Direction());
             float a = 0.5f * (unit_direction.Y() + 1.0f);
-            Color c = (1.0f - a) * Color(1.0f, 1.0f, 1.0f) + a * Color(0.5f, 0.7f, 1.0f);
+            Color c = (1.0f - a) * Color(1, 1, 1) + a * Color(0.5, 0.7, 1.0);
             return current_attentuation * c;
         }
     }
@@ -94,9 +94,7 @@ class RayTracer {
         Color* d_image;
         GpuErrorCheck(cudaMalloc((void**)&d_image, num_pixels * sizeof(Color)));
 
-        const unsigned int samples_per_pixel = 100;
-
-        RenderScene<<<blocks, threads>>>(d_image, m_camera.m_image_width, m_camera.m_image_height, samples_per_pixel, m_world, d_rand_state);
+        RenderScene<<<blocks, threads>>>(d_image, m_camera.m_image_width, m_camera.m_image_height, m_camera.m_samples_per_pixel, m_world, d_rand_state);
         GpuErrorCheck(cudaGetLastError());
         GpuErrorCheck(cudaDeviceSynchronize());
 

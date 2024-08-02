@@ -54,8 +54,8 @@ class Dielectric : public Material {
     __device__ Dielectric(float refraction_index) : m_refraction_index(refraction_index) {}
 
     __device__ bool Scatter(const Ray& r_in, const HitRecord& hit_record, Color& attenuation, Ray& scattered, curandState* rand_state) const override {
-        attenuation = Color(1.0, 1.0, 1.0);
-        float refraction_index = hit_record.m_front_face ? (1.0 / m_refraction_index) : m_refraction_index;
+        attenuation = Color(1, 1, 1);
+        float refraction_index = hit_record.m_front_face ? (1.0f / m_refraction_index) : m_refraction_index;
 
         Vec3 unit_direction = UnitVector(r_in.Direction());
         float cos_theta = fminf(Dot(-unit_direction, hit_record.m_normal), 1.0f);
