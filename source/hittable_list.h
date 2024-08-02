@@ -14,7 +14,7 @@ struct HittableList : public Hittable {
     __device__ bool Hit(const Ray& ray, Interval ray_t, HitRecord& rec) const override {
         HitRecord temp_rec;
         bool hit_anything = false;
-        auto closest_so_far = ray_t.m_max;
+        float closest_so_far = ray_t.m_max;
 
         for (unsigned int i = 0; i < m_size; ++i) {
             if (m_list[i]->Hit(ray, Interval(ray_t.m_min, closest_so_far), temp_rec)) {
