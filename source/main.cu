@@ -1,3 +1,6 @@
+#include <iostream>
+#include <string>
+
 #include <cuda_runtime.h>
 
 #include "camera.h"
@@ -9,7 +12,6 @@
 #include "sphere.h"
 
 // TODO: Move implementations out of header files
-// TODO: Write to an output file instead of std::out
 // TODO: Review structure and where standalone functions should live. Especially ones in vec3.h
 
 constexpr unsigned int SCENE_ELEMENTS = 22 * 22 + 1 + 3;
@@ -68,7 +70,14 @@ __global__ void FreeScene(Hittable** d_list, Hittable** d_world) {
     delete *d_world;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "Error: Exactly 2 arguments are required." << std::endl;
+        return -1;
+    }
+
+    std::string output_filename = argv[1];
+
     // Initialize the world
     Hittable** d_list;
     Hittable** d_world;
@@ -90,6 +99,7 @@ int main() {
     Camera camera(16.0f / 9.0f, 1200, 500, 20, Point3(13, 2, 3), Point3(0, 0, 0), Vec3(0, 1, 0), 0.1, 10);
     RayTracer ray_tracer(camera, d_world);
     ray_tracer.Render();
+    ray_tracer.WriteToFile(output_filename);
 
     // Free GPU memory
     FreeScene<<<1, 1>>>(d_list, d_world);

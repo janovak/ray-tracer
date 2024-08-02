@@ -1,4 +1,8 @@
+#pragma once
+
+#include <fstream>
 #include <iostream>
+#include <string>
 
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
@@ -74,6 +78,10 @@ class RayTracer {
   public:
     RayTracer(Camera camera, Hittable** world) : m_camera(camera), m_world(world) {}
 
+    ~RayTracer() {
+        free(m_image);
+    }
+
     void Render() {
         const unsigned int num_pixels = m_camera.m_image_height * m_camera.m_image_width;
 
@@ -99,25 +107,39 @@ class RayTracer {
         GpuErrorCheck(cudaDeviceSynchronize());
 
         // Allocate memory for image on the host
-        Color* h_image = (Color*)malloc(num_pixels * sizeof(Color));
+        m_image = (Color*)malloc(num_pixels * sizeof(Color));
 
         // Copy the result back to the host
-        GpuErrorCheck(cudaMemcpy(h_image, d_image, num_pixels * sizeof(Color), cudaMemcpyDeviceToHost));
-
-        // Output the image
-        std::cout << "P3\n" << m_camera.m_image_width << ' ' << m_camera.m_image_height << "\n255\n";
-        for (int j = 0; j < m_camera.m_image_height; ++j) {
-            for (int i = 0; i < m_camera.m_image_width; ++i) {
-                int pixel_index = j * m_camera.m_image_width + i;
-                std::cout << h_image[pixel_index];
-            }
-        }
+        GpuErrorCheck(cudaMemcpy(m_image, d_image, num_pixels * sizeof(Color), cudaMemcpyDeviceToHost));
 
         cudaFree(d_rand_state);
         cudaFree(d_image);
-        free(h_image);
+    }
+
+    int WriteToFile(std::string filename) {
+        std::ofstream output_file;
+        output_file.open(filename);
+
+        if (!output_file) {
+            std::cerr << "Error opening file: " << filename << std::endl;
+            return 1;
+        }
+
+        // Output the image
+        output_file << "P3\n" << m_camera.m_image_width << ' ' << m_camera.m_image_height << "\n255\n";
+        for (int j = 0; j < m_camera.m_image_height; ++j) {
+            for (int i = 0; i < m_camera.m_image_width; ++i) {
+                int pixel_index = j * m_camera.m_image_width + i;
+                output_file << m_image[pixel_index];
+            }
+        }
+
+        output_file.close();
+
+        return 0;
     }
 
     Camera m_camera;
     Hittable** m_world;
+    Color* m_image;
 };
