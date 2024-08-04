@@ -16,7 +16,7 @@ class Lambertian : public Material {
     __device__ Lambertian(const Color& albedo) : m_albedo(albedo) {}
 
     __device__ bool Scatter(const Ray& r_in, const HitRecord& hit_record, Color& attenuation, Ray& scattered, curandState* rand_state) const override {
-        Vec3 scatter_direction = hit_record.m_normal + RandomInUnitSphere(rand_state);
+        Vec3 scatter_direction = hit_record.m_normal + Vec3::RandomInUnitSphere(rand_state);
         
         // Catch degenerate scatter Direction
         if (scatter_direction.NearZero()) {
@@ -38,10 +38,10 @@ class Metal : public Material {
 
     __device__ bool Scatter(const Ray& r_in, const HitRecord& hit_record, Color& attenuation, Ray& scattered, curandState* rand_state) const override {
         Vec3 reflected = Reflect(r_in.Direction(), hit_record.m_normal);
-        reflected = UnitVector(reflected) + m_fuzz * RandomInUnitSphere(rand_state);
+        reflected = Vec3::UnitVector(reflected) + m_fuzz * Vec3::RandomInUnitSphere(rand_state);
         scattered = Ray(hit_record.m_point, reflected);
         attenuation = m_albedo;
-        return Dot(scattered.Direction(), hit_record.m_normal) > 0;
+        return Vec3::Dot(scattered.Direction(), hit_record.m_normal) > 0;
     }
 
   private:
@@ -57,8 +57,8 @@ class Dielectric : public Material {
         attenuation = Color(1, 1, 1);
         float refraction_index = hit_record.m_front_face ? (1.0f / m_refraction_index) : m_refraction_index;
 
-        Vec3 unit_direction = UnitVector(r_in.Direction());
-        float cos_theta = fminf(Dot(-unit_direction, hit_record.m_normal), 1.0f);
+        Vec3 unit_direction = Vec3::UnitVector(r_in.Direction());
+        float cos_theta = fminf(Vec3::Dot(-unit_direction, hit_record.m_normal), 1.0f);
         float sin_theta = sqrt(1.0f - cos_theta * cos_theta);
 
         bool cannot_refract = refraction_index * sin_theta > 1.0f;

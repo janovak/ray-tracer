@@ -17,7 +17,7 @@ struct Sphere : public Hittable {
         Vec3 oc = m_center - ray.Origin();
         // a, b, and c in the quadratic formula are equal to a, -2h, and c below
         float a = ray.Direction().LengthSquared();
-        float half_b = Dot(ray.Direction(), oc);
+        float half_b = Vec3::Dot(ray.Direction(), oc);
         float c = oc.LengthSquared() - m_radius * m_radius;
 
         float discriminant = half_b * half_b - a * c;

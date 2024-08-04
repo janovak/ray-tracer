@@ -20,25 +20,6 @@ __constant__ Vec3 d_defocus_disk_u;
 __constant__ Vec3 d_defocus_disk_v;
 __constant__ float d_defocus_angle;
 
-__device__ Vec3 SampleSquare(curandState* rand_state) {
-    return Vec3(RandomFloat(-0.5, 0.5, rand_state), RandomFloat(-0.5, 0.5, rand_state), 0);
-}
-
-__device__ Point3 DefocusDiskSample(curandState* rand_state) {
-    Vec3 point = RandomInUnitDisk(rand_state);
-    return d_camera_center + (point[0] * d_defocus_disk_u) + (point[1] * d_defocus_disk_v);
-}
-
-__device__ Ray GetRay(unsigned int x, unsigned int y, curandState* rand_state) {
-    Vec3 offset = SampleSquare(rand_state);
-    const Point3 pixel_sample = d_pixel00_loc + (x + offset.X()) * d_pixel_delta_u + (y + offset.Y()) * d_pixel_delta_v;
-
-    const Point3 ray_origin = (d_defocus_angle <= 0.0f) ? d_camera_center : DefocusDiskSample(rand_state);
-    const Vec3 ray_direction = pixel_sample - d_camera_center;
-
-    return Ray(ray_origin, ray_direction);
-}
-
 class Camera {
   public:
     unsigned int m_image_width;
@@ -63,9 +44,9 @@ class Camera {
         GpuErrorCheck(cudaMemcpyToSymbol(d_defocus_angle, &defocus_angle, sizeof(float)));
 
         // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
-        Vec3 w_axis = UnitVector(look_from - look_at);
-        Vec3 u_axis = UnitVector(Cross(vup, w_axis));
-        Vec3 v_axis = Cross(w_axis, u_axis);
+        Vec3 w_axis = Vec3::UnitVector(look_from - look_at);
+        Vec3 u_axis = Vec3::UnitVector(Vec3::Cross(vup, w_axis));
+        Vec3 v_axis = Vec3::Cross(w_axis, u_axis);
 
         // Determine viewport dimensions
         float theta = DegreesToRadians(vertical_fov);
@@ -94,5 +75,24 @@ class Camera {
         GpuErrorCheck(cudaMemcpyToSymbol(d_defocus_disk_u, &h_defocus_disk_u, sizeof(Vec3)));
         Vec3 h_defocus_disk_v = v_axis * defocus_radius;
         GpuErrorCheck(cudaMemcpyToSymbol(d_defocus_disk_v, &h_defocus_disk_v, sizeof(Vec3)));
+    }
+
+    static __device__ Vec3 SampleSquare(curandState* rand_state) {
+        return Vec3(RandomFloat(-0.5, 0.5, rand_state), RandomFloat(-0.5, 0.5, rand_state), 0);
+    }
+
+    static __device__ Point3 DefocusDiskSample(curandState* rand_state) {
+        Vec3 point = RandomInUnitDisk(rand_state);
+        return d_camera_center + (point[0] * d_defocus_disk_u) + (point[1] * d_defocus_disk_v);
+    }
+
+    static __device__ Ray GetRay(unsigned int x, unsigned int y, curandState* rand_state) {
+        Vec3 offset = SampleSquare(rand_state);
+        const Point3 pixel_sample = d_pixel00_loc + (x + offset.X()) * d_pixel_delta_u + (y + offset.Y()) * d_pixel_delta_v;
+
+        const Point3 ray_origin = (d_defocus_angle <= 0.0f) ? d_camera_center : DefocusDiskSample(rand_state);
+        const Vec3 ray_direction = pixel_sample - d_camera_center;
+
+        return Ray(ray_origin, ray_direction);
     }
 };

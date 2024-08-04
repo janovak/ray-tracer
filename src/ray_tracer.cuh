@@ -16,66 +16,15 @@
 #include "sphere.cuh"
 #include "ray.cuh"
 
-__device__ Color RayColor(const Ray& ray, Hittable** world, curandState* rand_state) {
-    Ray current_ray = ray;
-    Color current_attentuation = Color(1, 1, 1);
-
-    // Iterate a maximum of 50 times rather than trust that we'll reach the end of our recursion before hitting a stack overflow.
-    for (unsigned int i = 0; i < 50; ++i) {
-        HitRecord hit_record;
-        if ((*world)->Hit(current_ray, Interval(0.001f, kInfinity), hit_record)) {
-            Ray scattered;
-            Color attenuation;
-
-            if (hit_record.m_material->Scatter(current_ray, hit_record, attenuation, scattered, rand_state)) {
-                current_attentuation *= attenuation;
-                current_ray = scattered;
-            } else {
-                return Color(0, 0, 0);
-            }
-        } else {
-            const Vec3 unit_direction = UnitVector(current_ray.Direction());
-            float a = 0.5f * (unit_direction.Y() + 1.0f);
-            Color c = (1.0f - a) * Color(1, 1, 1) + a * Color(0.5, 0.7, 1.0);
-            return current_attentuation * c;
-        }
-    }
-
-    return Color(0, 0, 0); // Exceeded 50 iterations
-}
-
-__global__ void RenderInit(unsigned int width, unsigned int height, curandState* rand_state) {
-    const unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const unsigned int idy = threadIdx.y + blockIdx.y * blockDim.y;
-
-    if (idx < width && idy < height) {
-        const unsigned int pixel_index = idy * width + idx;
-        //Each thread gets same seed, a different sequence number, no offset
-        curand_init(1984, pixel_index, 0, &rand_state[pixel_index]);
-    }
-}
-
-__global__ void RenderScene(Color* image, unsigned int width, unsigned int height, unsigned int samples_per_pixel, Hittable** world, curandState* rand_state) {
-    const unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const unsigned int idy = threadIdx.y + blockIdx.y * blockDim.y;
-
-    if (idx < width && idy < height) {
-        const unsigned int pixel_index = idy * width + idx;
-        curandState local_rand_state = rand_state[pixel_index];
-
-        Color color(0, 0, 0);
-        for(unsigned int s = 0; s < samples_per_pixel; ++s) {
-            const Ray ray(GetRay(idx, idy, &local_rand_state));
-            color += RayColor(ray, world, &local_rand_state);
-        }
-        rand_state[pixel_index] = local_rand_state;
-
-        image[pixel_index] = color / static_cast<float>(samples_per_pixel);
-    }
-}
+__global__ void RenderInit(unsigned int width, unsigned int height, curandState* rand_state);
+__global__ void RenderScene(Color* image, unsigned int width, unsigned int height, unsigned int samples_per_pixel, Hittable** world, curandState* rand_state);
 
 class RayTracer {
   public:
+    Camera m_camera;
+    Hittable** m_world;
+    Color* m_image;
+
     RayTracer(Camera camera, Hittable** world) : m_camera(camera), m_world(world) {}
 
     ~RayTracer() {
@@ -139,7 +88,61 @@ class RayTracer {
         return 0;
     }
 
-    Camera m_camera;
-    Hittable** m_world;
-    Color* m_image;
+    static __device__ Color RayColor(const Ray& ray, Hittable** world, curandState* rand_state) {
+        Ray current_ray = ray;
+        Color current_attentuation = Color(1, 1, 1);
+
+        // Iterate a maximum of 50 times rather than trust that we'll reach the end of our recursion before hitting a stack overflow.
+        for (unsigned int i = 0; i < 50; ++i) {
+            HitRecord hit_record;
+            if ((*world)->Hit(current_ray, Interval(0.001f, kInfinity), hit_record)) {
+                Ray scattered;
+                Color attenuation;
+
+                if (hit_record.m_material->Scatter(current_ray, hit_record, attenuation, scattered, rand_state)) {
+                    current_attentuation *= attenuation;
+                    current_ray = scattered;
+                } else {
+                    return Color(0, 0, 0);
+                }
+            } else {
+                const Vec3 unit_direction = Vec3::UnitVector(current_ray.Direction());
+                float a = 0.5f * (unit_direction.Y() + 1.0f);
+                Color c = (1.0f - a) * Color(1, 1, 1) + a * Color(0.5, 0.7, 1.0);
+                return current_attentuation * c;
+            }
+        }
+
+        return Color(0, 0, 0); // Exceeded 50 iterations
+    }
 };
+
+__global__ void RenderInit(unsigned int width, unsigned int height, curandState* rand_state) {
+    const unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    const unsigned int idy = threadIdx.y + blockIdx.y * blockDim.y;
+
+    if (idx < width && idy < height) {
+        const unsigned int pixel_index = idy * width + idx;
+        //Each thread gets same seed, a different sequence number, no offset
+        curand_init(1984, pixel_index, 0, &rand_state[pixel_index]);
+    }
+}
+
+__global__ void RenderScene(Color* image, unsigned int width, unsigned int height, unsigned int samples_per_pixel, Hittable** world, curandState* rand_state) {
+    const unsigned int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    const unsigned int idy = threadIdx.y + blockIdx.y * blockDim.y;
+
+    if (idx < width && idy < height) {
+        const unsigned int pixel_index = idy * width + idx;
+        curandState local_rand_state = rand_state[pixel_index];
+
+        Color color(0, 0, 0);
+        for(unsigned int s = 0; s < samples_per_pixel; ++s) {
+            const Ray ray(Camera::GetRay(idx, idy, &local_rand_state));
+            color += RayTracer::RayColor(ray, world, &local_rand_state);
+        }
+        rand_state[pixel_index] = local_rand_state;
+
+        image[pixel_index] = color / static_cast<float>(samples_per_pixel);
+    }
+}

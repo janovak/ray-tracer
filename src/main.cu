@@ -12,7 +12,6 @@
 #include "sphere.cuh"
 
 // TODO: Move implementations out of header files
-// TODO: Review structure and where standalone functions should live. Especially ones in vec3.h
 
 constexpr unsigned int SCENE_ELEMENTS = 22 * 22 + 1 + 3;
 

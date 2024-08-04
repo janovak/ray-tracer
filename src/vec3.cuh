@@ -59,6 +59,28 @@ class Vec3Base {
         return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
     }
 
+    __host__ __device__ bool NearZero() const {
+        // Return true if the vector is close to zero in all dimensions.
+        float c = 1e-8;
+        return (fabs(e[0]) < c) && (fabs(e[1]) < c) && (fabs(e[2]) < c);
+    }
+
+    static __host__ __device__ float Dot(const Vec3Base<T>& u, const Vec3Base<T>& v) {
+        return u[0] * v[0]
+            + u[1] * v[1]
+            + u[2] * v[2];
+    }
+
+    static __host__ __device__ Vec3Base<T> Cross(const Vec3Base<T>& u, const Vec3Base<T>& v) {
+        return Vec3Base<T>(u[1] * v[2] - u[2] * v[1],
+                    u[2] * v[0] - u[0] * v[2],
+                    u[0] * v[1] - u[1] * v[0]);
+    }
+
+    static __host__ __device__ Vec3Base<T> UnitVector(const Vec3Base<T>& v) {
+        return v / v.Length();
+    }
+
     static __device__ Vec3Base<T> Random(curandState* rand_state) {
         return Vec3Base<T>(RandomFloat(rand_state), RandomFloat(rand_state), RandomFloat(rand_state));
     }
@@ -67,10 +89,13 @@ class Vec3Base {
         return Vec3Base<T>(RandomFloat(min, max, rand_state), RandomFloat(min, max, rand_state), RandomFloat(min, max, rand_state));
     }
 
-    __host__ __device__ bool NearZero() const {
-        // Return true if the vector is close to zero in all dimensions.
-        float c = 1e-8;
-        return (fabs(e[0]) < c) && (fabs(e[1]) < c) && (fabs(e[2]) < c);
+    static __device__ Vec3Base<T> RandomInUnitSphere(curandState* rand_state) {
+        while (true) {
+            Vec3Base<T> point = Vec3Base<T>::Random(-1.0, 1.0, rand_state);
+            if (point.LengthSquared() < 1.0f) {
+                return point;
+            }
+        }
     }
 
   protected:
@@ -119,31 +144,6 @@ __host__ __device__ Vec3Base<T> operator/(const Vec3Base<T>& v, float t) {
 
 // These functions are only applicable to Vec3s and not all Vec3Base<T>s
 
-__host__ __device__ float Dot(const Vec3& u, const Vec3& v) {
-    return u[0] * v[0]
-         + u[1] * v[1]
-         + u[2] * v[2];
-}
-
-__host__ __device__ Vec3 Cross(const Vec3& u, const Vec3& v) {
-    return Vec3(u[1] * v[2] - u[2] * v[1],
-                u[2] * v[0] - u[0] * v[2],
-                u[0] * v[1] - u[1] * v[0]);
-}
-
-__host__ __device__ Vec3 UnitVector(const Vec3& v) {
-    return v / v.Length();
-}
-
-__device__ Vec3 RandomInUnitSphere(curandState* rand_state) {
-    while (true) {
-        Vec3 point = Vec3::Random(-1.0, 1.0, rand_state);
-        if (point.LengthSquared() < 1.0f) {
-            return point;
-        }
-    }
-}
-
 __device__ Vec3 RandomInUnitDisk(curandState* rand_state) {
     while (true) {
         Vec3 point = Vec3(RandomFloat(-1.0, 1.0, rand_state), RandomFloat(-1.0, 1.0, rand_state), 0);
@@ -154,16 +154,16 @@ __device__ Vec3 RandomInUnitDisk(curandState* rand_state) {
 }
 
 __device__ Vec3 RandomUnitVector(curandState* rand_state) {
-    return UnitVector(RandomInUnitSphere(rand_state));
+    return Vec3::UnitVector(Vec3::RandomInUnitSphere(rand_state));
 }
 
 __device__ Vec3 Reflect(const Vec3& vector, const Vec3& normal) {
-    return vector - 2.0f * Dot(vector, normal) * normal;
+    return vector - 2.0f * Vec3::Dot(vector, normal) * normal;
 }
 
 __device__ Vec3 Refract(const Vec3& vector, const Vec3& normal, float refraction) {
-    Vec3 unit_vector = UnitVector(vector);
-    float cos_theta = fminf(Dot(-unit_vector, normal), 1.0);
+    Vec3 unit_vector = Vec3::UnitVector(vector);
+    float cos_theta = fminf(Vec3::Dot(-unit_vector, normal), 1.0);
     Vec3 refracted_direction_perp =  refraction * (unit_vector + cos_theta * normal);
     Vec3 refracted_direction_parallel = -sqrt(fabsf(1.0f - refracted_direction_perp.LengthSquared())) * normal;
     return refracted_direction_perp + refracted_direction_parallel;
