@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-#include "color.h"
-#include "vec3.h"
+#include "color.cuh"
+#include "vec3.cuh"
 
 class Color : public Vec3Base<Color> {
   public:

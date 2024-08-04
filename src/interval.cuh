@@ -1,6 +1,6 @@
 #pragma once
 
-#include "constants.h"
+#include "constants.cuh"
 
 struct Interval {
     float m_min;

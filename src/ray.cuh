@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vec3.h"
+#include "vec3.cuh"
 
 struct Ray {
     Point3 m_origin;

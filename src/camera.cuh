@@ -2,12 +2,12 @@
 
 #include <cuda_runtime.h>
 
-#include "color.h"
-#include "cuda_helpers.h"
-#include "hittable.h"
-#include "interval.h"
-#include "ray.h"
-#include "vec3.h"
+#include "color.cuh"
+#include "cuda_helpers.cuh"
+#include "hittable.cuh"
+#include "interval.cuh"
+#include "ray.cuh"
+#include "vec3.cuh"
 
 // Camera and viewport constants
 __constant__ Point3 d_camera_center;

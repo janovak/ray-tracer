@@ -2,10 +2,10 @@
 
 #include <cuda_runtime.h>
 
-#include "hittable.h"
-#include "material.h"
-#include "vec3.h"
-#include "ray.h"
+#include "hittable.cuh"
+#include "material.cuh"
+#include "vec3.cuh"
+#include "ray.cuh"
 
 struct Sphere : public Hittable {
     Point3 m_center;

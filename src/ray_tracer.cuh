@@ -7,14 +7,14 @@
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 
-#include "camera.h"
-#include "color.h"
-#include "constants.h"
-#include "cuda_helpers.h"
-#include "hittable.h"
-#include "hittable_list.h"
-#include "sphere.h"
-#include "ray.h"
+#include "camera.cuh"
+#include "color.cuh"
+#include "constants.cuh"
+#include "cuda_helpers.cuh"
+#include "hittable.cuh"
+#include "hittable_list.cuh"
+#include "sphere.cuh"
+#include "ray.cuh"
 
 __device__ Color RayColor(const Ray& ray, Hittable** world, curandState* rand_state) {
     Ray current_ray = ray;

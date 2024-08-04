@@ -3,13 +3,13 @@
 
 #include <cuda_runtime.h>
 
-#include "camera.h"
-#include "cuda_helpers.h"
-#include "hittable.h"
-#include "hittable_list.h"
-#include "material.h"
-#include "ray_tracer.h"
-#include "sphere.h"
+#include "camera.cuh"
+#include "cuda_helpers.cuh"
+#include "hittable.cuh"
+#include "hittable_list.cuh"
+#include "material.cuh"
+#include "ray_tracer.cuh"
+#include "sphere.cuh"
 
 // TODO: Move implementations out of header files
 // TODO: Review structure and where standalone functions should live. Especially ones in vec3.h
@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
     GpuErrorCheck(cudaDeviceSynchronize());
 
     // Render the scene
-    Camera camera(16.0f / 9.0f, 1200, 500, 20, Point3(13, 2, 3), Point3(0, 0, 0), Vec3(0, 1, 0), 0.1, 10);
+    Camera camera(16.0f / 9.0f, 400, 10, 20, Point3(13, 2, 3), Point3(0, 0, 0), Vec3(0, 1, 0), 0.1, 10);
     RayTracer ray_tracer(camera, d_world);
     ray_tracer.Render();
     ray_tracer.WriteToFile(output_filename);

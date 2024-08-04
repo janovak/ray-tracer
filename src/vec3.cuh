@@ -5,7 +5,7 @@
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 
-#include "cuda_helpers.h"
+#include "cuda_helpers.cuh"
 
 template <typename T>
 class Vec3Base {

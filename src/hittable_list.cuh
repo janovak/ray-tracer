@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "hittable.h"
+#include "hittable.cuh"
 
 struct HittableList : public Hittable {
     Hittable** m_list;

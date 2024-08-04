@@ -2,7 +2,7 @@
 
 #include <cuda_runtime.h>
 
-#include "constants.h"
+#include "constants.cuh"
 
 #define GpuErrorCheck(ans) { GpuAssert((ans), __FILE__, __LINE__); }
 inline void GpuAssert(cudaError_t code, const char *file, int line, bool abort=true) {

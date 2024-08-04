@@ -2,9 +2,9 @@
 
 #include <curand_kernel.h>
 
-#include "color.h"
-#include "hittable.h"
-#include "ray.h"
+#include "color.cuh"
+#include "hittable.cuh"
+#include "ray.cuh"
 
 class Material {
   public:
