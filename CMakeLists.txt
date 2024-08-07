@@ -10,14 +10,38 @@ find_package(CUDA 12.5 REQUIRED)
 
 # Specify the source files
 set(SOURCE_FILES
+    ${PROJECT_SOURCE_DIR}/src/camera.cu
+    ${PROJECT_SOURCE_DIR}/src/color.cu
+    ${PROJECT_SOURCE_DIR}/src/hittable.cu
+    ${PROJECT_SOURCE_DIR}/src/hittable_list.cu
+    ${PROJECT_SOURCE_DIR}/src/interval.cu
     ${PROJECT_SOURCE_DIR}/src/main.cu
+    ${PROJECT_SOURCE_DIR}/src/material.cu
+    ${PROJECT_SOURCE_DIR}/src/ray.cu
+    ${PROJECT_SOURCE_DIR}/src/ray_tracer.cu
+    ${PROJECT_SOURCE_DIR}/src/sphere.cu
+    ${PROJECT_SOURCE_DIR}/src/vec3.cu
+)
+
+# Specify the header files
+set(HEADER_FILES
+    ${PROJECT_SOURCE_DIR}/src/camera.cuh
+    ${PROJECT_SOURCE_DIR}/src/color.cuh
+    ${PROJECT_SOURCE_DIR}/src/hittable.cuh
+    ${PROJECT_SOURCE_DIR}/src/hittable_list.cuh
+    ${PROJECT_SOURCE_DIR}/src/interval.cuh
+    ${PROJECT_SOURCE_DIR}/src/material.cuh
+    ${PROJECT_SOURCE_DIR}/src/ray.cuh
+    ${PROJECT_SOURCE_DIR}/src/ray_tracer.cuh
+    ${PROJECT_SOURCE_DIR}/src/sphere.cuh
+    ${PROJECT_SOURCE_DIR}/src/vec3.cuh
 )
 
 # Specify the output directory for the binaries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bld)
 
 # Add the executable target
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
 # Set properties for the CUDA compilation
 set_target_properties(${PROJECT_NAME} PROPERTIES

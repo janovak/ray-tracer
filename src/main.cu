@@ -11,8 +11,6 @@
 #include "ray_tracer.cuh"
 #include "sphere.cuh"
 
-// TODO: Move implementations out of header files
-
 constexpr unsigned int SCENE_ELEMENTS = 22 * 22 + 1 + 3;
 
 __global__ void RandInit(curandState* rand_state) {
@@ -95,7 +93,7 @@ int main(int argc, char* argv[]) {
     GpuErrorCheck(cudaDeviceSynchronize());
 
     // Render the scene
-    Camera camera(16.0f / 9.0f, 400, 10, 20, Point3(13, 2, 3), Point3(0, 0, 0), Vec3(0, 1, 0), 0.1, 10);
+    Camera camera(16.0f / 9.0f, 1200, 500, 20, Point3(13, 2, 3), Point3(0, 0, 0), Vec3(0, 1, 0), 0.1, 10);
     RayTracer ray_tracer(camera, d_world);
     ray_tracer.Render();
     ray_tracer.WriteToFile(output_filename);

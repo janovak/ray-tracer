@@ -10,20 +10,17 @@ struct Interval {
 
     __device__ Interval(float min, float max) : m_min(min), m_max(max) {}
 
-    __device__ float Size() const {
+    inline __device__ float Size() const {
         return m_max - m_min;
     }
 
-    __device__ bool Contains(float x) const {
+    inline __device__ bool Contains(float x) const {
         return m_min <= x && x <= m_max;
     }
 
-    __device__ bool Surrounds(float x) const {
+    inline __device__ bool Surrounds(float x) const {
         return m_min < x && x < m_max;
     }
 
     static const Interval empty, universe;
 };
-
-const Interval Interval::empty    = Interval(+kInfinity, -kInfinity);
-const Interval Interval::universe = Interval(-kInfinity, +kInfinity);
